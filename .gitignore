@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.vite/
+.DS_Store
+*.log
+
+# local-only
+.agents/
+.cursor/
+old-number-src/
+doc.zip
+docs/superpowers/

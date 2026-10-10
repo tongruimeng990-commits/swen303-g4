@@ -1,0 +1,994 @@
+/* ---------------------------------------------------------------------------
+   Club list (the sheet that slides over the pinned hero) and the shortlist
+   pile → spread → focus. Poster artwork comes in via --poster, --poster-fit,
+   --poster-aspect (see posterVars in content/clubs.ts).
+   --------------------------------------------------------------------------- */
+
+:root {
+  --sl-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sl-paper: #f4f4f2;
+  --sl-ink: #141414;
+  --sl-ink-soft: #5a5a57;
+  --sl-ink-faint: #8a8a86;
+  --sl-line: rgba(20, 20, 20, 0.1);
+  --sl-note: #fff3b0;
+}
+
+.club-list :focus-visible,
+.shortlist-stage :focus-visible,
+.shortlist-pile:focus-visible {
+  outline-color: var(--sl-ink);
+}
+
+/* The poster copy that flies from the list into the pile. */
+.shortlist-flyer {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  border-radius: 6px;
+  background: var(--poster) center / var(--poster-fit, cover) no-repeat;
+  background-color: #e9e9e6;
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.6);
+  will-change: transform, opacity;
+}
+
+/* ---- Club list ---------------------------------------------------------- */
+
+.club-list {
+  position: relative;
+  z-index: 2;
+  min-height: 100svh;
+  padding: clamp(64px, 9vh, 112px) 5% 160px;
+  border-radius: 28px 28px 0 0;
+  background: var(--sl-paper);
+  color: var(--sl-ink);
+  box-shadow: 0 -24px 60px -30px rgba(0, 0, 0, 0.7);
+}
+
+.club-list__head {
+  max-width: 880px;
+  margin: 0 auto 40px;
+}
+
+.club-list__eyebrow {
+  margin: 0 0 14px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--sl-ink-faint);
+}
+
+.club-list__head h2 {
+  margin: 0;
+  font-size: clamp(32px, 4vw, 54px);
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+
+.club-list__lead {
+  max-width: 520px;
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--sl-ink-soft);
+}
+
+.club-list__rows {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--sl-line);
+}
+
+.club-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 22px;
+  padding: 18px 12px;
+  margin: 0 -12px;
+  border-bottom: 1px solid var(--sl-line);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.club-row:hover,
+.club-row:focus-visible {
+  background: rgba(20, 20, 20, 0.04);
+}
+
+.club-row:focus-visible {
+  outline: 1px solid var(--sl-ink);
+  outline-offset: -1px;
+}
+
+.club-row[data-caught]::before {
+  position: absolute;
+  left: 0;
+  top: 18px;
+  bottom: 18px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--sl-ink);
+  content: "";
+}
+
+.club-row__thumb {
+  display: block;
+  width: 60px;
+  height: 42px;
+  border-radius: 4px;
+  background: var(--poster) center / cover no-repeat;
+  background-color: #e4e4e1;
+  box-shadow: 0 0 0 1px rgba(20, 20, 20, 0.08);
+}
+
+.club-row__main {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.club-row__name {
+  width: fit-content;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--sl-ink);
+  text-decoration: none;
+  cursor: pointer;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0 1px;
+  background-position: 0 100%;
+  transition: background-size 180ms var(--sl-ease);
+}
+
+a.club-row__name:hover,
+a.club-row__name:focus-visible {
+  background-size: 100% 1px;
+}
+
+.club-row__name--static {
+  cursor: default;
+}
+
+.club-row__name--static small {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--sl-ink-faint);
+}
+
+.club-row__blurb {
+  font-size: 14px;
+  color: var(--sl-ink-soft);
+}
+
+.club-row__when {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sl-ink-soft);
+  white-space: nowrap;
+}
+
+.club-row__mark {
+  min-width: 84px;
+  padding: 4px 10px;
+  border: 1px solid var(--sl-line);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  color: var(--sl-ink-faint);
+  white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.club-row:hover .club-row__mark {
+  border-color: var(--sl-ink);
+  color: var(--sl-ink);
+}
+
+.club-row[data-caught] .club-row__mark {
+  border-color: var(--sl-ink);
+  background: var(--sl-ink);
+  color: var(--sl-paper);
+}
+
+/* Poster floating beside the hovered row */
+.club-preview {
+  position: fixed;
+  z-index: 6;
+  display: none;
+  width: var(--poster-w, 220px);
+  height: var(--poster-h, 220px);
+  border-radius: 6px;
+  background: var(--poster) center / var(--poster-fit, cover) no-repeat;
+  background-color: #e9e9e6;
+  box-shadow: 0 0 0 1px rgba(20, 20, 20, 0.06), 0 30px 60px -30px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  transition: top 200ms var(--sl-ease), left 200ms var(--sl-ease);
+  animation: club-preview-in 200ms var(--sl-ease) both;
+}
+
+.club-preview[data-visible] {
+  display: block;
+}
+
+/* While the pile is open the list is behind the scrim; no floating poster. */
+body:has(.shortlist-stage) .club-preview {
+  display: none;
+}
+
+@keyframes club-preview-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- Filters: one sticky bar under the heading ------------------------- */
+
+.club-filters {
+  position: sticky;
+  top: 12px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  max-width: 880px;
+  margin: 0 auto 26px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(244, 244, 242, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 0 1px var(--sl-line), 0 16px 36px -28px rgba(0, 0, 0, 0.55);
+}
+
+/* Not thrown in yet: present for keyboards and screen readers, unseen. */
+.club-filters[data-incoming] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.club-filters[data-landed] {
+  animation: club-filters-land 460ms var(--sl-ease) both;
+}
+
+@keyframes club-filters-land {
+  0% {
+    transform: scale(0.96) translateY(2px);
+  }
+  45% {
+    transform: scale(1.015) translateY(-2px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* The copy the golem throws: fixed, drawn above everything, no layout. */
+.club-filters--ghost {
+  position: fixed;
+  z-index: 62;
+  margin: 0;
+  max-width: none;
+  pointer-events: none;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.club-filters__search {
+  position: relative;
+  flex: 1 1 170px;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  color: var(--sl-ink-faint);
+}
+
+.club-filters__glass {
+  position: absolute;
+  left: 10px;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+.club-filters__search input {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px 0 30px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.05);
+  color: var(--sl-ink);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.club-filters__search input::placeholder {
+  color: var(--sl-ink-faint);
+}
+
+.club-filters__search input:hover {
+  background: rgba(20, 20, 20, 0.07);
+}
+
+.club-filters__search input:focus-visible {
+  border-color: var(--sl-ink);
+  background: #fff;
+}
+
+.club-filters__search input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.club-filters__group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.club-filters__pill {
+  height: 28px;
+  padding: 0 11px;
+  border: 1px solid var(--sl-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sl-ink-soft);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms var(--sl-ease);
+}
+
+.club-filters__pill:hover {
+  border-color: var(--sl-ink);
+  color: var(--sl-ink);
+}
+
+.club-filters__pill:active {
+  transform: scale(0.96);
+}
+
+.club-filters__pill[aria-pressed="true"] {
+  border-color: var(--sl-ink);
+  background: var(--sl-ink);
+  color: var(--sl-paper);
+}
+
+.club-filters__count {
+  flex: 1 0 100%;
+  margin: 0;
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--sl-ink-faint);
+}
+
+/* Nothing filtered: the heading already says how many clubs there are. Keep
+   the live region in the DOM, just not in the layout. */
+.club-filters__count[data-idle] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.club-filters__clear {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sl-ink);
+  font: inherit;
+  font-size: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.club-list__empty {
+  max-width: 880px;
+  margin: 0 auto 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--sl-ink-soft);
+}
+
+/* A club we cannot place in the week: still listed, pushed down, quiet. */
+.club-row[data-unplaced] {
+  opacity: 0.45;
+}
+
+.club-row[data-unplaced]:hover,
+.club-row[data-unplaced]:focus-visible {
+  opacity: 0.8;
+}
+
+/* ---- The pile ----------------------------------------------------------- */
+
+.shortlist-pile {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 40;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: opacity 200ms ease, transform 240ms var(--sl-ease);
+}
+
+.shortlist-pile:hover {
+  transform: translateY(-2px);
+}
+
+.shortlist-pile:focus-visible {
+  outline: 1px solid var(--sl-ink);
+  outline-offset: 2px;
+}
+
+.shortlist-pile[data-open] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.shortlist-pile__stack {
+  position: relative;
+  width: 76px;
+  height: 76px;
+}
+
+.shortlist-pile__card {
+  position: absolute;
+  inset: 0;
+  width: 64px;
+  max-height: 72px;
+  margin: auto;
+  aspect-ratio: var(--poster-aspect, 1);
+  border: 2px solid #fff;
+  border-radius: 5px;
+  background: var(--poster) center / var(--poster-fit, cover) no-repeat;
+  background-color: #e9e9e6;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18), 0 10px 18px -12px rgba(0, 0, 0, 0.6);
+  transform: rotate(calc((var(--i, 0) - 2) * 7deg)) translate(calc(var(--i, 0) * 3px - 4px), calc(var(--i, 0) * -3px + 4px));
+  transition: transform 260ms var(--sl-ease);
+}
+
+.shortlist-pile:hover .shortlist-pile__card {
+  transform: rotate(calc((var(--i, 0) - 2) * 11deg)) translate(calc(var(--i, 0) * 6px - 10px), calc(var(--i, 0) * -5px + 6px));
+}
+
+.shortlist-pile__label {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.86);
+  color: var(--sl-paper);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* ---- Spread / focus stage ---------------------------------------------- */
+
+.shortlist-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  padding: 48px 40px 72px;
+}
+
+.shortlist-stage__scrim {
+  position: absolute;
+  inset: 0;
+  animation: shortlist-fade 200ms ease both;
+}
+
+.shortlist-stage[data-tone="dark"] .shortlist-stage__scrim {
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.shortlist-stage[data-tone="light"] .shortlist-stage__scrim {
+  background: rgba(240, 240, 238, 0.86);
+}
+
+.shortlist-stage[data-closing] .shortlist-stage__scrim {
+  animation: shortlist-fade 240ms ease both reverse;
+}
+
+@keyframes shortlist-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.shortlist-stage__row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.shortlist-stage[data-mode="focus"] .shortlist-stage__row {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.shortlist-stage__hint {
+  position: absolute;
+  bottom: 28px;
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.shortlist-stage[data-tone="dark"] .shortlist-stage__hint {
+  color: rgba(244, 244, 242, 0.6);
+}
+
+.shortlist-stage[data-tone="light"] .shortlist-stage__hint {
+  color: var(--sl-ink-faint);
+}
+
+/* A card: small mac window with the poster and a sticky note */
+.shortlist-card {
+  position: relative;
+  width: 240px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--sl-ink);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(20, 20, 20, 0.08), 0 30px 60px -30px rgba(0, 0, 0, 0.65);
+  transition:
+    width 320ms var(--sl-ease),
+    opacity 220ms ease,
+    transform 320ms var(--sl-ease),
+    box-shadow 220ms ease;
+  will-change: transform;
+}
+
+.shortlist-card:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--sl-ink), 0 30px 60px -30px rgba(0, 0, 0, 0.65);
+}
+
+.shortlist-stage[data-mode="spread"] .shortlist-stage__row:hover .shortlist-card:not(:hover):not(:focus-visible) {
+  opacity: 0.45;
+}
+
+.shortlist-card[data-focused] {
+  flex: 0 0 auto;
+  width: min(720px, 100%);
+  cursor: default;
+}
+
+/* Neighbours step aside: narrower, dimmer, never wrapping. */
+.shortlist-card[data-quiet] {
+  flex: 0 1 160px;
+  width: 160px;
+  min-width: 56px;
+  opacity: 0.35;
+  transform: scale(0.92);
+}
+
+.shortlist-card[data-quiet]:hover {
+  opacity: 0.7;
+}
+
+.shortlist-card__bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 10px;
+  background: #f1f1ef;
+  border-bottom: 1px solid rgba(20, 20, 20, 0.08);
+}
+
+.shortlist-card__close,
+.shortlist-card__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.shortlist-card__close {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: #ff5f57;
+  cursor: pointer;
+}
+
+.shortlist-card__close::before,
+.shortlist-card__close::after {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 1.5px;
+  background: rgba(60, 0, 0, 0.7);
+  content: "";
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(45deg);
+  transition: opacity 120ms ease;
+}
+
+.shortlist-card__close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.shortlist-card:hover .shortlist-card__close::before,
+.shortlist-card:hover .shortlist-card__close::after,
+.shortlist-card__close:focus-visible::before,
+.shortlist-card__close:focus-visible::after {
+  opacity: 1;
+}
+
+.shortlist-card__dot:nth-of-type(1) {
+  background: #febc2e;
+}
+
+.shortlist-card__dot:nth-of-type(2) {
+  background: #28c840;
+}
+
+.shortlist-card__title {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: #6b6b68;
+  padding-right: 38px; /* balance the lights */
+}
+
+.shortlist-card__body {
+  position: relative;
+  display: grid;
+}
+
+.shortlist-card[data-focused] .shortlist-card__body {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+
+.shortlist-card__poster {
+  width: 100%;
+  aspect-ratio: var(--poster-aspect, 4 / 3);
+  background: var(--poster) center / var(--poster-fit, cover) no-repeat;
+  background-color: #ececea;
+}
+
+.shortlist-card[data-focused] .shortlist-card__poster {
+  aspect-ratio: auto;
+  min-height: 300px;
+  height: 100%;
+}
+
+.shortlist-card__note {
+  position: relative;
+  z-index: 1;
+  width: 156px;
+  margin: -22px 12px 12px auto;
+  padding: 10px 10px 12px;
+  display: grid;
+  gap: 2px;
+  background: var(--sl-note);
+  color: #3a3a2a;
+  font-size: 11px;
+  line-height: 1.4;
+  transform: rotate(-2deg);
+  box-shadow: 0 8px 16px -10px rgba(0, 0, 0, 0.55);
+}
+
+.shortlist-card__note span:first-child {
+  font-weight: 600;
+}
+
+.shortlist-card[data-focused] .shortlist-card__note,
+.shortlist-card[data-quiet] .shortlist-card__note {
+  display: none;
+}
+
+.shortlist-card__details {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 22px 22px 18px;
+}
+
+.shortlist-card__details h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.shortlist-card__blurb {
+  margin: -6px 0 0;
+  font-size: 14px;
+  color: var(--sl-ink-soft);
+}
+
+.shortlist-card__details dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.shortlist-card__details dl div {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.shortlist-card__details dt {
+  color: var(--sl-ink-faint);
+}
+
+.shortlist-card__details dd {
+  margin: 0;
+}
+
+.shortlist-card__details em {
+  font-style: normal;
+  color: var(--sl-ink-faint);
+}
+
+.shortlist-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.shortlist-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(20, 20, 20, 0.16);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--sl-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms var(--sl-ease);
+}
+
+.shortlist-button:hover {
+  transform: translateY(-1px);
+}
+
+.shortlist-button--primary {
+  background: var(--sl-ink);
+  border-color: var(--sl-ink);
+  color: #fff;
+}
+
+.shortlist-button[aria-disabled="true"] {
+  color: var(--sl-ink-faint);
+  cursor: default;
+}
+
+.shortlist-button[aria-disabled="true"]:hover {
+  transform: none;
+}
+
+.shortlist-button__pin {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid #e8333a;
+  transition: background 160ms ease;
+}
+
+.shortlist-button--pin[aria-pressed="true"] {
+  background: var(--sl-note);
+  border-color: #e9d77a;
+}
+
+.shortlist-button--pin[aria-pressed="true"] .shortlist-button__pin {
+  background: #e8333a;
+}
+
+.shortlist-card__nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.shortlist-card__nav button {
+  padding: 4px 6px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--sl-ink-faint);
+  cursor: pointer;
+}
+
+.shortlist-card__nav button:hover {
+  color: var(--sl-ink);
+}
+
+/* ---- Narrow screens ----------------------------------------------------- */
+
+@media (max-width: 680px) {
+  .club-list {
+    padding: 56px 24px 140px;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .club-row {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 8px 14px;
+    padding: 16px 8px;
+    margin: 0 -8px;
+  }
+
+  .club-row__thumb {
+    width: 48px;
+    height: 34px;
+    grid-row: 1 / span 3;
+    align-self: start;
+  }
+
+  .club-row__name {
+    font-size: 18px;
+  }
+
+  .club-row__when,
+  .club-row__mark {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .club-preview {
+    display: none !important;
+  }
+
+  .club-filters {
+    top: 8px;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  .club-filters__search {
+    flex-basis: 100%;
+  }
+
+  .club-filters__pill {
+    height: 26px;
+    padding: 0 9px;
+  }
+
+  .shortlist-pile {
+    right: 12px;
+    bottom: 12px;
+    padding: 8px;
+  }
+
+  .shortlist-pile__stack {
+    width: 60px;
+    height: 60px;
+  }
+
+  .shortlist-pile__card {
+    width: 50px;
+    max-height: 56px;
+  }
+
+  .shortlist-stage {
+    display: block;
+    padding: 16px 16px 72px;
+    overflow-y: auto;
+  }
+
+  .shortlist-stage__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    max-width: none;
+  }
+
+  .shortlist-card,
+  .shortlist-card[data-focused] {
+    width: 100%;
+  }
+
+  .shortlist-card[data-quiet] {
+    display: none;
+  }
+
+  .shortlist-card[data-focused] .shortlist-card__body {
+    grid-template-columns: 1fr;
+  }
+
+  .shortlist-card[data-focused] .shortlist-card__poster {
+    min-height: 0;
+    aspect-ratio: var(--poster-aspect, 4 / 3);
+    height: auto;
+  }
+
+  .shortlist-stage__hint {
+    position: fixed;
+    bottom: 20px;
+  }
+}
+
+@media (hover: none) {
+  .club-preview {
+    display: none !important;
+  }
+}
+
+/* ---- Reduced motion ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .club-row,
+  .club-row__name,
+  .club-row__mark,
+  .club-preview,
+  .shortlist-pile,
+  .shortlist-pile__card,
+  .shortlist-card,
+  .shortlist-button {
+    transition: none;
+  }
+
+  .club-preview,
+  .shortlist-stage__scrim,
+  .club-filters[data-landed] {
+    animation: none;
+  }
+
+  .club-filters__pill {
+    transition: none;
+  }
+
+  .shortlist-card[data-quiet] {
+    transform: none;
+  }
+}
