@@ -1,6 +1,4 @@
-import { useId } from 'react'
 import {
-  EMPTY_FILTER,
   filterIsActive,
   SLOT_LABELS,
   SLOTS,
@@ -8,12 +6,15 @@ import {
   type ClubFilter,
   type ClubSlot,
 } from '../content/clubs'
+import { SEARCH_DOCK_ID } from '../lib/search'
 
 export const CLUB_FILTERS_ID = 'club-filters'
 
 interface ClubFiltersProps {
   value: ClubFilter
   onChange: (update: (previous: ClubFilter) => ClubFilter) => void
+  /** Drop every filter, including the words in the search box. */
+  onClear: () => void
   total: number
   matched: number
   /** clubs that could not be judged because they have not published a time */
@@ -27,11 +28,11 @@ interface ClubFiltersProps {
 const toggle = <T,>(list: T[], item: T) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item])
 
 /**
- * Search + weekday + time-of-day filters for the club list. One sticky bar
- * under the heading, always in the same place; multi-select, clearable.
+ * Weekday + time-of-day filters for the club list, with a slot for the page's
+ * one search box. One sticky bar under the heading, always in the same place;
+ * multi-select, clearable.
  */
-export function ClubFilters({ value, onChange, total, matched, unplaced, incoming, landed }: ClubFiltersProps) {
-  const searchId = useId()
+export function ClubFilters({ value, onChange, onClear, total, matched, unplaced, incoming, landed }: ClubFiltersProps) {
   const active = filterIsActive(value)
 
   const summary = (() => {
@@ -49,25 +50,8 @@ export function ClubFilters({ value, onChange, total, matched, unplaced, incomin
       data-incoming={incoming || undefined}
       data-landed={landed || undefined}
     >
-      <label className="club-filters__search" htmlFor={searchId}>
-        <svg className="club-filters__glass" viewBox="0 0 16 16" aria-hidden="true">
-          <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
-          <path d="M10.5 10.5 14 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        </svg>
-        <input
-          id={searchId}
-          type="search"
-          placeholder="search by name"
-          aria-label="search clubs by name"
-          value={value.query}
-          onChange={(event) => {
-            const query = event.target.value
-            onChange((previous) => ({ ...previous, query }))
-          }}
-          autoComplete="off"
-          spellCheck={false}
-        />
-      </label>
+      {/* The search box from the first screen lands here once you scroll down. */}
+      <div id={SEARCH_DOCK_ID} className="club-filters__dock" />
 
       <div className="club-filters__group" role="group" aria-label="weekday">
         {WEEKDAY_LABELS.map((label, index) => {
@@ -112,7 +96,7 @@ export function ClubFilters({ value, onChange, total, matched, unplaced, incomin
             <button
               type="button"
               className="club-filters__clear"
-              onClick={() => onChange(() => EMPTY_FILTER)}
+              onClick={onClear}
             >
               clear
             </button>

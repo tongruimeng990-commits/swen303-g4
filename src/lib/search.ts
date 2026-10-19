@@ -8,14 +8,19 @@ import type { ClubFilter, ClubSlot } from '../content/clubs'
 
 export const SEARCH_EVENT = 'vuwclubs:search'
 
+/** The slot in the list's filter bar where the search box docks once you scroll down. */
+export const SEARCH_DOCK_ID = 'club-filters-dock'
+
 export interface SearchRequest {
   query: string
   /** True on Enter / the arrow button: scroll to the list and hand focus over. */
   commit: boolean
+  /** Set when the list itself changed the words (its clear button), so the box follows suit. */
+  origin?: 'list'
 }
 
-export function requestSearch(query: string, commit: boolean) {
-  window.dispatchEvent(new CustomEvent<SearchRequest>(SEARCH_EVENT, { detail: { query, commit } }))
+export function requestSearch(query: string, commit: boolean, origin?: 'list') {
+  window.dispatchEvent(new CustomEvent<SearchRequest>(SEARCH_EVENT, { detail: { query, commit, origin } }))
 }
 
 /** 1 = Monday … 7 = Sunday for the user's local date. */

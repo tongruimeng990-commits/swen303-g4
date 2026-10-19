@@ -295,52 +295,19 @@ body:has(.shortlist-stage) .club-preview {
   will-change: transform, opacity;
 }
 
-.club-filters__search {
+/* Where the page's search box lands. Empty until it arrives: a faint outline
+   of the pill, so the bar never looks like something is missing. */
+.club-filters__dock {
   position: relative;
   flex: 1 1 170px;
   min-width: 150px;
-  display: flex;
-  align-items: center;
-  color: var(--sl-ink-faint);
-}
-
-.club-filters__glass {
-  position: absolute;
-  left: 10px;
-  width: 14px;
-  height: 14px;
-  pointer-events: none;
-}
-
-.club-filters__search input {
-  width: 100%;
-  height: 32px;
-  padding: 0 10px 0 30px;
-  border: 1px solid transparent;
+  min-height: 36px;
   border-radius: 999px;
-  background: rgba(20, 20, 20, 0.05);
-  color: var(--sl-ink);
-  font: inherit;
-  font-size: 13px;
-  outline: none;
-  transition: background 160ms ease, border-color 160ms ease;
+  box-shadow: inset 0 0 0 1px rgba(20, 20, 20, 0.08);
 }
 
-.club-filters__search input::placeholder {
-  color: var(--sl-ink-faint);
-}
-
-.club-filters__search input:hover {
-  background: rgba(20, 20, 20, 0.07);
-}
-
-.club-filters__search input:focus-visible {
-  border-color: var(--sl-ink);
-  background: #fff;
-}
-
-.club-filters__search input::-webkit-search-cancel-button {
-  cursor: pointer;
+.club-filters__dock:has(.hero-search) {
+  box-shadow: none;
 }
 
 .club-filters__group {
@@ -899,7 +866,7 @@ body:has(.shortlist-stage) .club-preview {
     border-radius: 14px;
   }
 
-  .club-filters__search {
+  .club-filters__dock {
     flex-basis: 100%;
   }
 

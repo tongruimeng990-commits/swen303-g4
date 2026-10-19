@@ -353,6 +353,60 @@
   text-decoration-color: #fff;
 }
 
+/* ---- Docked: the same pill, sitting in the list's filter bar ------------ */
+
+.hero-search[data-docked] {
+  position: static;
+  width: 100%;
+  transform: none;
+  translate: none;
+  opacity: 1;
+  transition: none;
+}
+
+.hero-search[data-docked] .hero-search__field {
+  height: 36px;
+  padding-right: 4px;
+  border-color: transparent;
+  background: rgb(20 20 20 / 92%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 12%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.hero-search[data-docked] .hero-search__field:hover {
+  background: rgb(20 20 20 / 100%);
+}
+
+.hero-search[data-docked] .hero-search__field:focus-within {
+  border-color: rgb(255 255 255 / 40%);
+  background: #141414;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 12%),
+    0 0 0 3px rgb(20 20 20 / 14%);
+}
+
+.hero-search[data-docked] .hero-search__glass {
+  left: 13px;
+  width: 14px;
+  height: 14px;
+}
+
+.hero-search[data-docked] .hero-search__field input {
+  padding: 0 8px 0 34px;
+  font-size: 13px;
+}
+
+.hero-search[data-docked] .hero-search__go {
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+}
+
+.hero-search[data-docked] .hero-search__hint {
+  display: none;
+}
+
 /* ---- The glass ---------------------------------------------------------- */
 
 .crt {

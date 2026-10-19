@@ -14,8 +14,8 @@ import {
 } from '../content/clubs'
 import { announceHover, CATCH_EVENT, FILTER_EVENT, useGolem } from '../golem/useGolem'
 import { pileTargetRect, useShortlist } from '../lib/shortlist'
-import { parseQuery, SEARCH_EVENT, type SearchRequest } from '../lib/search'
-import { CLUB_FILTERS_ID, ClubFilters } from './ClubFilters'
+import { parseQuery, requestSearch, SEARCH_EVENT, type SearchRequest } from '../lib/search'
+import { ClubFilters } from './ClubFilters'
 
 interface Preview {
   slug: string
@@ -140,25 +140,36 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
     }
   }, [all, shortlist, catchClub])
 
-  // The hero search box: live typing just filters; Enter brings you down
-  // here and puts the caret in this bar's search, so you carry on in place.
+  // The search box: live typing just filters; Enter brings you down here.
+  // The box itself follows (it docks into the filter bar), keeping its focus.
+  // Day and time words in the box light the matching pills; pills you pressed
+  // yourself stay pressed while you type.
+  const lastQuery = useRef('')
   useEffect(() => {
     const onSearch = (event: Event) => {
       const detail = (event as CustomEvent<SearchRequest>).detail
       if (!detail) return
-      setFilter(parseQuery(detail.query))
+      const parsed = parseQuery(detail.query)
+      const before = parseQuery(lastQuery.current)
+      lastQuery.current = detail.query
+      const swap = <T,>(current: T[], old: T[], fresh: T[]) => [...new Set([...current.filter((x) => !old.includes(x)), ...fresh])]
+      setFilter((previous) => ({
+        query: parsed.query,
+        days: swap(previous.days, before.days, parsed.days).sort((a, b) => a - b),
+        slots: swap(previous.slots, before.slots, parsed.slots),
+      }))
       if (!detail.commit) return
       document.getElementById('clubs')?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-      const input = document.querySelector<HTMLInputElement>(`#${CLUB_FILTERS_ID} input[type="search"]`)
-      if (input) {
-        input.focus({ preventScroll: true })
-        const end = input.value.length
-        input.setSelectionRange?.(end, end)
-      }
     }
     window.addEventListener(SEARCH_EVENT, onSearch)
     return () => window.removeEventListener(SEARCH_EVENT, onSearch)
   }, [])
+
+  // "clear" drops the pills and empties the search box in one go.
+  const clearFilters = () => {
+    setFilter(EMPTY_FILTER)
+    requestSearch('', false, 'list')
+  }
 
   const onRowKeyDown = (event: KeyboardEvent<HTMLDivElement>, club: ClubSummary) => {
     if (event.target !== event.currentTarget) return
@@ -198,6 +209,7 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
       <ClubFilters
         value={filter}
         onChange={setFilter}
+        onClear={clearFilters}
         total={all.length}
         matched={matched.length}
         unplaced={unplaced.length}
@@ -214,7 +226,7 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
                   : `the ${unplaced.length} below haven’t said when they meet yet.`
               }`
             : 'no club matches that.'}{' '}
-          <button type="button" className="club-filters__clear" onClick={() => setFilter(EMPTY_FILTER)}>
+          <button type="button" className="club-filters__clear" onClick={clearFilters}>
             clear filters
           </button>
         </p>
