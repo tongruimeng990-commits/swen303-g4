@@ -5,7 +5,6 @@ import './styles.css'
 import './editorial.css'
 import './clubs/desktop.css'
 import './shortlist/shortlist.css'
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

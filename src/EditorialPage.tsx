@@ -7,6 +7,9 @@ import type { GolemMode } from './golem/Golem'
 import { ClubList } from './shortlist/ClubList'
 import { CLUB_FILTERS_ID } from './shortlist/ClubFilters'
 import { Shortlist } from './shortlist/Shortlist'
+import { HeroTitle } from './HeroTitle'
+import { HeroSearch } from './home/HeroSearch'
+import { posterInteraction } from './lib/poster-interaction'
 
 const Golem = lazy(() => import('./golem/Golem'))
 
@@ -39,14 +42,14 @@ const golemRestingSpot = () => {
   return { x: pile.left - 34, y: pile.bottom - 4 }
 }
 
-const navigation = [
-  { label: 'what’s on', href: '#this-week', featured: true },
-  { label: 'find a club', href: '#clubs' },
-  { label: 'your first visit', href: '#first-visit' },
-  { label: 'about', href: '#about', quiet: true },
-]
+/**
+ * One link, one target. "what's on" and "your first visit" went: the homepage
+ * is the first screen and the club list; sessions live in each club's
+ * coming-up.ics and in my clubs' week view, and how joining works is on every
+ * club's first-time.note.
+ */
+const navigation = [{ label: 'find a club', href: '#clubs' }]
 
-const RESTORED_DISMISS_DISTANCE = 140
 /** How far you scroll (in viewport heights) before the hero has fully retreated. */
 const REVEAL_DISTANCE = 0.8
 
@@ -81,11 +84,10 @@ interface SettledCard {
   x: number
   y: number
   tone: number
-  /** put back from a previous visit; sticks until the pointer moves well away */
+  locked?: boolean
+  /** Put back after visiting the club, keeping the selected state. */
   restored?: boolean
 }
-
-const SETTLE_IDLE_MS = 400
 
 function canSettle() {
   if (typeof window === 'undefined') return false
@@ -103,7 +105,6 @@ export function EditorialPage() {
   const smoothedSpeed = useRef(0)
   const ghostsRef = useRef<Ghost[]>([])
   const settledRef = useRef<SettledCard | null>(null)
-  const idleTimer = useRef<number | null>(null)
   const { pins } = usePins()
   const cycle = useMemo(() => buildCycle(pins), [pins])
   const cycleRef = useRef(cycle)
@@ -265,12 +266,6 @@ export function EditorialPage() {
     settledRef.current = settled
   }, [settled])
 
-  useEffect(() => {
-    return () => {
-      if (idleTimer.current !== null) window.clearTimeout(idleTimer.current)
-    }
-  }, [])
-
   // Coming back from a club page: put the poster you left through back where it was.
   useEffect(() => {
     const remembered = takeRememberedPoster()
@@ -283,6 +278,7 @@ export function EditorialPage() {
       y: Math.min(Math.max(remembered.fy, 0.12), 0.88) * window.innerHeight,
       tone,
       restored: true,
+      locked: true,
     }
     settledRef.current = restored
     setSettled(restored)
@@ -293,52 +289,59 @@ export function EditorialPage() {
     return sequence[order % sequence.length]
   }
 
-  const clearIdleTimer = () => {
-    if (idleTimer.current !== null) {
-      window.clearTimeout(idleTimer.current)
-      idleTimer.current = null
+  const lockPoster = (card: SettledCard) => {
+    const poster = clubsByTone[card.tone].poster
+    const halfWidth = poster.width / 2 + 16
+    const halfHeight = (poster.height + 120) / 2 + 16
+    const next = {
+      ...card,
+      x: Math.max(halfWidth, Math.min(window.innerWidth - halfWidth, card.x)),
+      y: Math.max(halfHeight, Math.min(window.innerHeight - halfHeight, card.y)),
+      locked: true,
     }
+    settledRef.current = next
+    setSettled(next)
+    ghostsRef.current = []
+    setGhosts([])
   }
 
-  const settleNearest = (point: { x: number; y: number }) => {
+  const lockNearest = (point: { x: number; y: number }) => {
     if (!canSettle() || settledRef.current) return
 
     const living = ghostsRef.current
     if (living.length === 0) return
 
-    let nearest = living[0]
+    let nearest: Ghost | null = null
+    let position = point
     let nearestDistance = Number.POSITIVE_INFINITY
     for (const ghost of living) {
-      const distance = Math.hypot(ghost.x - point.x, ghost.y - point.y)
+      const element = document.querySelector<HTMLElement>(`[data-ghost-id="${ghost.id}"]`)
+      if (!element || Number(getComputedStyle(element).opacity) < 0.08) continue
+      const rect = element.getBoundingClientRect()
+      const centre = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      const distance = Math.hypot(centre.x - point.x, centre.y - point.y)
       if (distance < nearestDistance) {
         nearest = ghost
         nearestDistance = distance
+        position = centre
       }
     }
+    if (!nearest) return
 
-    setGhosts((current) => current.filter((item) => item.id !== nearest.id))
     const next = {
       id: nearest.id,
-      x: nearest.x,
-      y: nearest.y,
+      x: position.x,
+      y: position.y,
       tone: nearest.tone,
     }
-    settledRef.current = next
-    setSettled(next)
-  }
-
-  const scheduleSettle = (point: { x: number; y: number }) => {
-    clearIdleTimer()
-    if (!canSettle() || settledRef.current) return
-    idleTimer.current = window.setTimeout(() => {
-      idleTimer.current = null
-      settleNearest(point)
-    }, SETTLE_IDLE_MS)
+    lockPoster(next)
   }
 
   const dismissSettled = () => {
     settledRef.current = null
     setSettled(null)
+    lastPointer.current = null
+    lastEmission.current = null
   }
 
   const leaveTrace = (event: React.PointerEvent<HTMLElement>) => {
@@ -347,17 +350,9 @@ export function EditorialPage() {
 
     const current = settledRef.current
     if (current) {
-      if (
-        current.restored &&
-        Math.hypot(current.x - point.x, current.y - point.y) < RESTORED_DISMISS_DISTANCE
-      ) {
-        // You came back to this poster; leave it until you actually move on.
-        return
-      }
+      if (posterInteraction(Boolean(current.locked), 'move') === 'keep' || (event.target as HTMLElement).closest('.settled-card')) return
       dismissSettled()
     }
-
-    scheduleSettle(point)
 
     const previousPointer = lastPointer.current
     const previousEmission = lastEmission.current
@@ -419,31 +414,68 @@ export function EditorialPage() {
     setGhosts((current) => [...current.slice(-7), next])
   }
 
-  const onPointerLeave = () => {
-    clearIdleTimer()
+  // Depth: where the pointer is on the screen, -1…1 each way. The photo and
+  // the title lean against it (hero.css); the trail does not read these.
+  const trackDepth = (event: React.PointerEvent<HTMLElement>) => {
+    const screen = event.currentTarget
+    const rect = screen.getBoundingClientRect()
+    screen.style.setProperty('--px', (((event.clientX - rect.left) / rect.width) * 2 - 1).toFixed(3))
+    screen.style.setProperty('--py', (((event.clientY - rect.top) / rect.height) * 2 - 1).toFixed(3))
+  }
+
+  const onPointerLeave = (event: React.PointerEvent<HTMLElement>) => {
+    event.currentTarget.style.setProperty('--px', '0')
+    event.currentTarget.style.setProperty('--py', '0')
     lastPointer.current = null
     lastEmission.current = null
     smoothedSpeed.current = 0
-    dismissSettled()
+    if (posterInteraction(Boolean(settledRef.current?.locked), 'leave') === 'dismiss') dismissSettled()
   }
 
-  const onFieldPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+  const onFieldClick = (event: React.MouseEvent<HTMLElement>) => {
     const target = event.target as HTMLElement
-    if (target.closest('.settled-card')) return
-    if (settledRef.current) dismissSettled()
+    // Clicks inside the search box are for the search box, not the trail.
+    if (target.closest('.settled-card, .image-ghost, .hero-search, a, button')) return
+    if (settledRef.current) {
+      if (posterInteraction(Boolean(settledRef.current.locked), 'outside') === 'dismiss') dismissSettled()
+      return
+    }
+    lockNearest({ x: event.clientX, y: event.clientY })
   }
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || !settledRef.current) return
+      settledRef.current = null
+      setSettled(null)
+      lastPointer.current = null
+      lastEmission.current = null
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const club = settled ? clubsByTone[settled.tone % clubsByTone.length] : null
 
   return (
     <main className="homepage" ref={pageRef}>
       <section
+        id="home"
         className="black-field"
         aria-labelledby="hero-title"
-        onPointerMove={leaveTrace}
+        onPointerMove={(event) => {
+          trackDepth(event)
+          leaveTrace(event)
+        }}
         onPointerLeave={onPointerLeave}
-        onPointerDown={onFieldPointerDown}
+        onClick={onFieldClick}
       >
+        <img
+          className="hero-photo"
+          src="/clubs/vicfolk/dancing.jpg"
+          alt=""
+          fetchPriority="high"
+        />
         <header className="header">
           <a className="brand" href="#home" aria-label="vuw clubs home">
             <span>vuw</span>
@@ -451,26 +483,26 @@ export function EditorialPage() {
           </a>
           <nav aria-label="Primary navigation">
             {navigation.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className={[
-                  item.featured ? 'nav-link--featured' : '',
-                  item.quiet ? 'nav-link--quiet' : '',
-                ].filter(Boolean).join(' ')}
-              >
-                {item.featured ? <span className="nav-live-dot" aria-hidden="true" /> : null}
+              <a key={item.label} href={item.href}>
                 {item.label}
               </a>
             ))}
           </nav>
         </header>
 
-        <div className="ghost-layer" aria-hidden="true">
+        <div className="ghost-layer">
           {ghosts.map((ghost) => (
-            <span
+            <button
+              type="button"
               key={ghost.id}
               className="image-ghost"
+              data-ghost-id={ghost.id}
+              aria-label={`Stop to look at ${clubsByTone[ghost.tone].name}`}
+              onClick={(event) => {
+                event.stopPropagation()
+                const rect = event.currentTarget.getBoundingClientRect()
+                lockPoster({ id: ghost.id, tone: ghost.tone, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
+              }}
               data-tone={ghost.tone}
               data-pinned={pins.includes(clubsByTone[ghost.tone].slug) || undefined}
               data-quiet={(pins.length > 0 && !pins.includes(clubsByTone[ghost.tone].slug)) || undefined}
@@ -491,8 +523,8 @@ export function EditorialPage() {
                 setGhosts((current) => current.filter((item) => item.id !== ghost.id))
               }}
             >
-              <i />
-            </span>
+              <i aria-hidden="true" />
+            </button>
           ))}
         </div>
 
@@ -502,9 +534,15 @@ export function EditorialPage() {
             href={club.href}
             data-tone={settled.tone}
             data-restored={settled.restored || undefined}
+            data-locked={settled.locked || undefined}
             style={{ ...posterStyle(club), left: settled.x, top: settled.y }}
-            aria-label={`${club.name}: ${club.blurb}. Next: ${club.next}`}
-            onClick={() => {
+            aria-label={`${club.name}: ${club.blurb}. ${settled.locked ? 'Click again to open this club' : 'Click to stop and preview'}`}
+            onClick={(event) => {
+              if (posterInteraction(Boolean(settled.locked), 'activate') === 'lock') {
+                event.preventDefault()
+                lockPoster(settled)
+                return
+              }
               if (club.href.startsWith('#')) return
               rememberPoster({
                 slug: club.slug,
@@ -521,30 +559,26 @@ export function EditorialPage() {
               </span>
               <span className="settled-card__blurb">{club.blurb}</span>
               <span className="settled-card__next">{club.next}</span>
+              <span className="settled-card__hint">{settled.locked ? 'click again to explore · esc to release' : 'click to stop and look'}</span>
             </span>
           </a>
         ) : null}
 
-        <h1 id="hero-title" className="stair-title">
-          <span className="stair-title__global">your</span>
-          <span className="stair-title__creative">VUW</span>
-          <span className="stair-title__studio">club.</span>
-        </h1>
+        <HeroTitle />
+        <HeroSearch />
 
-        <p className="aside-copy aside-copy--one">find a club that fits your week</p>
-        <p className="aside-copy aside-copy--two">know before you go</p>
-
-        <div className="dots" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <a className="scroll-hint" href="#clubs">
-          <span>scroll</span>
-          <span aria-hidden="true">·</span>
-          <span>all clubs</span>
+        <a className="scroll-hint" href="#clubs" aria-label="Browse all clubs">
+          <span aria-hidden="true">↓</span>
         </a>
+
+        {/* The glass: scanlines, glare, bezel, and the set switching on. Purely visual. */}
+        <div className="crt" aria-hidden="true">
+          <span className="crt__scan" />
+          <span className="crt__glass" />
+          <span className="crt__bezel" />
+          <span className="crt__on crt__on--top" />
+          <span className="crt__on crt__on--bottom" />
+        </div>
       </section>
 
       <GolemProvider value={golemHandle}>

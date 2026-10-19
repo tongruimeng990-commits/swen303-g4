@@ -19,7 +19,6 @@ const VIEWPORT_MARGIN = 12
 const HEADER_CLEARANCE = 72
 const MIN_PLAYER_HEIGHT = 200 // YouTube's embedded player minimum
 const STALL_AFTER_MS = 8000
-const SOUND_BLOCKED_AFTER_MS = 1500
 
 type LoadState = 'idle' | 'creating' | 'ready' | 'error'
 
@@ -80,12 +79,10 @@ export function VideoWindow({
   const [progress, setProgress] = useState({ current: 0, duration: 0 })
   const [posterLarge, setPosterLarge] = useState(false)
   const [posterSrc, setPosterSrc] = useState(() => posterUrl(video.youtubeId, 'small'))
-  // Hovering starts playback with sound; `preview` marks the muted fallback
-  // used before the visitor's first click, where the first click turns sound on.
+  // `preview` marks a muted hover preview, where the first click turns sound on.
   const [preview, setPreview] = useState(false)
   const hoverRef = useRef(false)
   const previewArmed = useRef(false)
-  const mutedFallbackTimer = useRef<number | null>(null)
 
   // Keep the slot's measured width as the collapsed size.
   useLayoutEffect(() => {
@@ -224,9 +221,10 @@ export function VideoWindow({
       v === 'top' ? vh - rect.top - VIEWPORT_MARGIN : rect.bottom - HEADER_CLEARANCE - VIEWPORT_MARGIN
     const byWidth = availableWidth / rect.width
     const byHeight = ((availableHeight - BAR_HEIGHT - CAPTION_HEIGHT) * aspect) / rect.width
-    // Aim for YouTube's 200px minimum player height, but never grow past the viewport.
+    // Aim for YouTube's 200px minimum player height, but never grow past the
+    // viewport. Small cards (a strip of five) therefore grow further than big ones.
     const minForPlayer = (MIN_PLAYER_HEIGHT * aspect) / rect.width
-    const wanted = Math.max(maxScale, Math.min(minForPlayer, maxScale))
+    const wanted = Math.max(maxScale, minForPlayer)
     const next = Math.max(1, Math.min(wanted, byWidth, byHeight))
     setAnchorH(h)
     setAnchorV(v)
@@ -253,10 +251,6 @@ export function VideoWindow({
     setIsPlaying(false)
     setPreview(false)
     previewArmed.current = false
-    if (mutedFallbackTimer.current !== null) {
-      window.clearTimeout(mutedFallbackTimer.current)
-      mutedFallbackTimer.current = null
-    }
   }, [active, isPlaying])
 
   // Prepare the player as soon as a window is focused so the first click starts faster.
@@ -265,11 +259,10 @@ export function VideoWindow({
     ensurePlayer().catch(() => undefined)
   }, [active, loadState, ensurePlayer])
 
-  // Hovering in with a mouse starts playback once the player is ready — with
-  // sound when the browser allows it. Browsers only let a page start audible
-  // playback after the visitor has clicked or tapped somewhere; before that we
-  // fall back to a muted preview and say so, and the first click turns sound on.
-  // One preview per hover: pausing it by hand doesn't restart it.
+  // Hovering in with a mouse starts a muted preview once the player is ready;
+  // sound only ever comes from a deliberate click (user test 1 and the
+  // Iteration 2 review both asked for this). One preview per hover: pausing
+  // it by hand doesn't restart it.
   useEffect(() => {
     if (!active || loadState !== 'ready' || !hoverRef.current || previewArmed.current) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -277,51 +270,11 @@ export function VideoWindow({
     const player = playerRef.current
     if (!player) return
     previewArmed.current = true
-
-    const startMuted = () => {
-      const p = playerRef.current
-      if (!p) return
-      p.mute()
-      setMuted(true)
-      setPreview(true)
-      play()
-    }
-
-    const activation = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation
-    const mayUseSound = activation ? activation.hasBeenActive : true
-    if (!mayUseSound) {
-      startMuted()
-      return
-    }
-
-    player.unMute()
-    if (player.getVolume() === 0) player.setVolume(100)
-    setMuted(false)
-    setPreview(false)
+    player.mute()
+    setMuted(true)
+    setPreview(true)
     play()
-    // If the browser refused to start audible playback, retry muted.
-    mutedFallbackTimer.current = window.setTimeout(() => {
-      mutedFallbackTimer.current = null
-      const p = playerRef.current
-      if (!p || !hoverRef.current || !wantPlayRef.current) return
-      if (p.getPlayerState() === YT_STATE.PLAYING) return
-      startMuted()
-    }, SOUND_BLOCKED_AFTER_MS)
   }, [active, loadState, isPlaying, play])
-
-  useEffect(() => {
-    if (isPlaying && mutedFallbackTimer.current !== null) {
-      window.clearTimeout(mutedFallbackTimer.current)
-      mutedFallbackTimer.current = null
-    }
-  }, [isPlaying])
-
-  useEffect(
-    () => () => {
-      if (mutedFallbackTimer.current !== null) window.clearTimeout(mutedFallbackTimer.current)
-    },
-    [],
-  )
 
   // Poll progress while playing.
   useEffect(() => {

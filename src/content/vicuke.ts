@@ -16,37 +16,43 @@ export const vicukeDesktop: ClubDesktopContent = {
   slug: 'vicuke',
   name: 'Vic Uke',
   fullName: 'Victoria University of Wellington Ukulele Club',
-  hello:
-    'hello, we’re vic uke. a weekly ukulele hang for every level. share tips, learn songs together, and sometimes play a gig.',
+  tags: ["ukulele", "all skill levels", "songs together"],
+  intro: "a weekly ukulele hang for every level.",
+  letter: {
+    "subject": "a note from vicuke",
+    "greeting": "kia ora,",
+    "body": "share tips, learn songs together, and sometimes play a gig. all skill levels are welcome, whether you are experienced or picking up the ukulele today.",
+    "signoff": "vic uke"
+  },
+  costs: []
+,
+  bring: {
+    "yes": [],
+    "no": []
+  },
+  essentials: [
+    'all skill levels, including picking one up today.',
+    'email them for this week’s room and time. it isn’t posted online.',
+    'it’s a social club first: share tips, learn songs together. performing is optional.',
+  ],
+  goodToKnow: [
+    "all skill levels: “whether you’re an experienced ukulele player or just picking it up today.”",
+    "it’s a social club first. share tips, learn songs together.",
+    "performance opportunities come up around the university and elsewhere. optional.",
+    "they kept jamming through lockdown: the lazy song cover was recorded from everyone’s bedrooms in 2020.",
+    "they were one of 23 groups in the ukulele extravaganza at cubadupa 2024.",
+    "they guested at mukume taiko’s 30th-anniversary concert in the memorial theatre."
+  ],
   meets: {
     line: 'weekly',
     room: 'Kelburn campus · day & time not published',
     caveat: 'they don’t post the meeting time online — email them for this week’s session · last checked oct 2026',
     directions: 'Ask the club for this week’s room when you email them.',
   },
-  thisWeek: {
-    subject: 'this week at vic uke: learn a song together',
-    lines: [
-      'kia ora,',
-      'vic uke meets weekly to share knowledge, tips and learn songs together. all skill levels.',
-      'the day and room aren’t published online. email vicukulele@gmail.com for this week’s session.',
-      'performance chances come up around the university and beyond: they’ve played cubadupa with nz ukulele and guested at mukume taiko’s heartbeat concert.',
-      'vic uke',
-    ],
-  },
-  firstTime: [
-    'all skill levels: “whether you’re an experienced ukulele player or just picking it up today.”',
-    'it’s a social club first. share tips, learn songs together.',
-    'performance opportunities come up around the university and elsewhere. optional.',
-    'they kept jamming through lockdown: the lazy song cover was recorded from everyone’s bedrooms in 2020.',
-    'they were one of 23 groups in the ukulele extravaganza at cubadupa 2024.',
-    'they guested at mukume taiko’s 30th-anniversary concert in the memorial theatre.',
-  ],
   watch: {
     file: 'lazy-song-cover.mov',
     lead: 'two clips from their own channel: the 2020 promo, and a lockdown cover recorded from everyone’s bedrooms.',
   },
-  quotesFile: 'in-their-words.txt',
   quotes: [
     {
       text: 'We are a social club of ukulele enthusiasts of all levels who meet weekly to share knowledge, tips, and learn songs together.',
@@ -69,7 +75,7 @@ export const vicukeDesktop: ClubDesktopContent = {
       by: 'vic uke, promo video',
     },
   ],
-  comingUp: [
+  events: [
     { name: 'Weekly session', when: 'weekly, time not published', where: 'Kelburn campus' },
     { name: 'CubaDupa ukulele extravaganza (with NZ Ukulele)', when: 'march', where: 'Cuba Street' },
     { name: 'Performances around the university', when: 'through the year' },

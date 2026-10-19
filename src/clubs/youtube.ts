@@ -89,7 +89,7 @@ export function createPlayer(
   return loadYouTubeApi().then(
     (YT) =>
       new Promise<YTPlayer>((resolve) => {
-        const player = new YT.Player(element, {
+        new YT.Player(element, {
           host: 'https://www.youtube-nocookie.com',
           videoId,
           width: '100%',

@@ -13,8 +13,36 @@ export const vuccDesktop: ClubDesktopContent = {
   slug: 'vucc',
   name: 'VUCC',
   fullName: 'Victoria University Canoe Club',
-  hello:
-    'hello, we’re vucc. white-water kayaking out of wellington. pool sessions on thursdays, rivers on the weekend. open to everyone, not just students.',
+  tags: ["kayaking", "pool sessions", "river trips"],
+  intro: "start in the pool, then discover white-water kayaking.",
+  letter: {
+    "subject": "a note from vucc",
+    "greeting": "kia ora paddlers,",
+    "body": "new to kayaking? start with a pool session, where the club teaches you. beginners trips run on the hutt river.",
+    "signoff": "the vucc committee"
+  },
+  costs: []
+,
+  bring: {
+    "yes": [],
+    "no": [
+      "Never paddle a river alone."
+    ]
+  },
+  essentials: [
+    'start at the thursday pool session at freyberg pool, oriental parade. that’s where they teach you.',
+    'open to students and non-students alike.',
+    'beginners trips run on the hutt river when the flow is right: check the live gauges on the club site first.',
+  ],
+  goodToKnow: [
+    "start at the thursday pool session at freyberg pool. that’s where they teach you.",
+    "open to students and non-students alike.",
+    "beginners trips are on the hutt river. the club also surfs kayaks at lyall bay.",
+    "the local grade 3 run is the hutt gorge, from kaitoke regional park down to te marua.",
+    "the club celebrated its 40th anniversary in 2020 with a run of the mangahao white water park.",
+    "the river gauges on their site are a guide only. never paddle a river alone.",
+    "River trips depend on flow. Check the live river gauges on the club website before planning; the gauges are a guide only."
+  ],
   meets: {
     line: 'thursdays 7:45pm',
     room: 'Freyberg Pool, Oriental Parade',
@@ -22,30 +50,10 @@ export const vuccDesktop: ClubDesktopContent = {
     directions:
       'Freyberg Pool is on Oriental Parade on the waterfront. The weekly pool session is where beginners start.',
   },
-  thisWeek: {
-    subject: 'this week at vucc: thursday pool session',
-    lines: [
-      'kia ora paddlers,',
-      'pool session thursday 7:45pm at freyberg. new to kayaking? this is where you start — “we’ll get you ready to send it down a river in no time.”',
-      'river trips depend on flow. the club site has live river gauges for the region, so check before you plan anything.',
-      'beginners trips run on the hutt river, usually from the akatarawa confluence down to maoribank.',
-      'see you in the pool,',
-      'the vucc committee',
-    ],
-  },
-  firstTime: [
-    'start at the thursday pool session at freyberg pool. that’s where they teach you.',
-    'open to students and non-students alike.',
-    'beginners trips are on the hutt river. the club also surfs kayaks at lyall bay.',
-    'the local grade 3 run is the hutt gorge, from kaitoke regional park down to te marua.',
-    'the club celebrated its 40th anniversary in 2020 with a run of the mangahao white water park.',
-    'the river gauges on their site are a guide only. never paddle a river alone.',
-  ],
   watch: {
     file: 'beginners-trip.mov',
     lead: 'all shot by the club. watch the beginners trips first — that’s what your first weekend on the river looks like.',
   },
-  quotesFile: 'in-their-words.txt',
   quotes: [
     {
       text: 'VUCC is a kayak and canoe club based at Victoria University of Wellington, but is open to everyone, students and non-students alike.',
@@ -68,8 +76,8 @@ export const vuccDesktop: ClubDesktopContent = {
       by: 'vucc, club site',
     },
   ],
-  comingUp: [
-    { name: 'Pool session', when: 'every thursday 7:45pm', where: 'Freyberg Pool' },
+  events: [
+    { name: 'Pool session', when: 'every thursday 7:45pm', time: '7:45pm', weekday: 4, where: 'Freyberg Pool' },
     { name: 'Beginners Trip', when: 'march', where: 'Hutt River, Akatarawa confluence to Maoribank' },
     { name: 'Waitangi weekend trip', when: 'waitangi weekend, february', where: 'Tongariro, Whangaehu and Waihohonu rivers' },
     { name: 'Hutt Gorge runs', when: 'when the river is up', where: 'Kaitoke to Te Marua' },

@@ -15,8 +15,54 @@ export const vuwtcDesktop: ClubDesktopContent = {
   slug: 'vuwtc',
   name: 'VUWTC',
   fullName: 'Victoria University of Wellington Tramping Club',
-  hello:
-    'hello, we’re vuwtc. tramping, climbing and tacos since 1921. a trip every weekend, graded for every level, with club gear you can borrow.',
+  tags: ["tramping", "climbing", "tacos"],
+  intro: "a trip every weekend, with adventures for every level.",
+  letter: {
+    "subject": "a note from vuwtc",
+    "greeting": "kia ora trampers,",
+    "body": "tramping, climbing and tacos since 1921. a trip every weekend, graded for every level, with club gear you can borrow.",
+    "signoff": "the vuwtc committee"
+  },
+  costs: [
+    {
+      "label": "Student · six months",
+      "price": "$15"
+    },
+    {
+      "label": "Non-student · six months",
+      "price": "$20"
+    },
+    {
+      "label": "Student · annual",
+      "price": "$20"
+    },
+    {
+      "label": "Non-student · annual",
+      "price": "$30"
+    }
+  ],
+  bring: {
+    "yes": [],
+    "no": []
+  },
+  essentials: [
+    'trips every weekend, graded for all levels. they leave 5:30pm fridays from the hunter carpark.',
+    'the tuesday room changes weekly. it’s posted on their facebook and instagram story.',
+    'freshers is the first and biggest trip of the year: graded easy, the best way to meet people.',
+    'membership includes club gear, fmc membership and shop discounts.',
+  ],
+  goodToKnow: [
+    "trips every weekend, graded for all levels. day walks round the wellington hills up to week-long trips in the southern alps.",
+    "freshers is the first and biggest trip of the year. graded easy / social, the best way to meet people.",
+    "“whether it’s your first night sleeping in the bush or you just summited aoraki, we have trips for your skill level.”",
+    "trips leave 5:30pm fridays from the hunter carpark.",
+    "taco tuesday after every meeting, potluck style at someone’s flat.",
+    "not just tramping: climbing (hangdog indoors, pukerua bay outdoors), snowcraft, canyoning and conservation trips.",
+    "Membership includes club gear, FMC membership and shop discounts.",
+    "AGM means annual general meeting.",
+    "FMC means Federated Mountain Clubs.",
+    "Taco Tuesday is potluck style; the flat is announced at the meeting."
+  ],
   meets: {
     line: 'tuesdays 6pm',
     room: 'Kelburn campus · room changes weekly',
@@ -24,33 +70,10 @@ export const vuwtcDesktop: ClubDesktopContent = {
     directions:
       'Trips usually leave at 5:30pm on Fridays from the Hunter carpark, round the back of the Hunter Building between Salamanca Road and Kelburn Parade.',
   },
-  thisWeek: {
-    subject: 'this week at vuwtc: bush rave (spooky edition) + agm',
-    lines: [
-      'kia ora trampers,',
-      'meeting tuesday 6pm on kelburn campus. check the facebook or instagram story for the room.',
-      'this weekend, 10–11 october: bush rave, spooky edition. no walking or skill required, just expect a blast.',
-      'tuesday 13 october: agm 2026.',
-      '14–16 october: te matawai mish, for tramps week.',
-      'taco tuesday after the meeting as always. the flat is announced at the meeting.',
-      'see you tuesday,',
-      'the vuwtc committee',
-    ],
-  },
-  firstTime: [
-    'trips every weekend, graded for all levels. day walks round the wellington hills up to week-long trips in the southern alps.',
-    'membership: $15 for six months ($20 non-students) or $20 a year ($30 non-students). it includes club gear, fmc membership and shop discounts.',
-    'freshers is the first and biggest trip of the year. graded easy / social, the best way to meet people.',
-    '“whether it’s your first night sleeping in the bush or you just summited aoraki, we have trips for your skill level.”',
-    'trips leave 5:30pm fridays from the hunter carpark.',
-    'taco tuesday after every meeting, potluck style at someone’s flat.',
-    'not just tramping: climbing (hangdog indoors, pukerua bay outdoors), snowcraft, canyoning and conservation trips.',
-  ],
   watch: {
     file: 'trip-vibes.mov',
     lead: 'all their own footage, from a 40-second trip edit to an 8-minute story about what a year in the club looks like.',
   },
-  quotesFile: 'in-their-words.txt',
   quotes: [
     {
       text: 'VUWTC is one of the busiest, largest, sexiest, and most exciting clubs on campus. We offer huge amounts of thrilling pursuits to distract you from your studies and work!',
@@ -73,13 +96,14 @@ export const vuwtcDesktop: ClubDesktopContent = {
       by: 'vuwtc, “what we do”',
     },
   ],
-  comingUp: [
-    { name: 'Bush Rave, Spooky Edition', when: '10–11 october 2026', note: 'no walking or skill required' },
-    { name: 'AGM 2026', when: '13 october 2026' },
-    { name: 'Te Matawai mish (Tramps Week)', when: '14–16 october 2026' },
+  events: [
+    { name: 'Weekly meeting', when: 'tuesdays 6pm', time: '6pm', weekday: 2, where: 'Kelburn campus · check the club story for the room' },
+    { name: 'Bush Rave, Spooky Edition', when: '10–11 october 2026', date: '2026-10-10', endDate: '2026-10-11', note: 'no walking or skill required' },
+    { name: 'AGM 2026', when: '13 october 2026', date: '2026-10-13' },
+    { name: 'Te Matawai mish (Tramps Week)', when: '14–16 october 2026', date: '2026-10-14', endDate: '2026-10-16' },
     { name: 'Freshers', when: 'early trimester 1', note: 'the first and largest trip of the year, graded easy / social' },
     { name: 'RockCraft', when: 'a week or two after freshers', where: 'Pukerua Bay' },
-    { name: 'BushBall', when: 'after the mid-trimester break', where: 'somewhere in the Tararua Ranges' },
+    { name: 'BushBall', headline: true, when: 'after the mid-trimester break', where: 'somewhere in the Tararua Ranges' },
     { name: 'Snowcraft', when: 'after week 12, trimester 1', note: 'crampons, ice axes, avalanche basics' },
     { name: 'Midwinter Xmas', when: 'first weeks of trimester 2' },
   ],

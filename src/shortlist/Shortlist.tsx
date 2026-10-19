@@ -6,16 +6,31 @@ import {
   useState,
   type CSSProperties,
   type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { clubBySlug, hasOwnPage, posterVars, type ClubSummary } from '../content/clubs'
 import { usePins } from '../lib/pins'
-import { MOTION_EASE, MOTION_MS, PILE_ID, prefersReducedMotion, useShortlist } from '../lib/shortlist'
+import { MOTION_EASE, MOTION_MS, PILE_ID, SHORTLIST_CATCH_EVENT, pileTargetRect, prefersReducedMotion, useShortlist } from '../lib/shortlist'
+import { returnTransform } from './pile-motion'
 import { PILE_HIT_EVENT } from '../golem/useGolem'
+import { WeekView } from './WeekView'
 
 type Mode = { kind: 'pile' } | { kind: 'spread' } | { kind: 'focus'; slug: string }
+type View = 'cards' | 'week'
 
 const PILE_VISIBLE = 5
 const STAGGER_MS = 28
+/** How long the mouse has to rest on a neighbouring card before it slides in. */
+const HOVER_FOCUS_MS = 140
+const VIEW_KEY = 'vuwclubs:stage-view'
+
+const rememberedView = (): View => {
+  try {
+    return sessionStorage.getItem(VIEW_KEY) === 'week' ? 'week' : 'cards'
+  } catch {
+    return 'cards'
+  }
+}
 
 /**
  * The pile in the corner, and what happens when you open it:
@@ -25,8 +40,12 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
   const shortlist = useShortlist()
   const pins = usePins()
   const [mode, setMode] = useState<Mode>({ kind: 'pile' })
+  const [view, setView] = useState<View>(rememberedView)
   const [closing, setClosing] = useState(false)
+  const closingRef = useRef(false)
+  const [caughtHint, setCaughtHint] = useState(false)
   const pileRef = useRef<HTMLButtonElement | null>(null)
+  const stageRef = useRef<HTMLDivElement | null>(null)
   const rowRef = useRef<HTMLDivElement | null>(null)
   const beforeRects = useRef<Map<string, DOMRect> | null>(null)
   const enteredFrom = useRef<DOMRect | null>(null)
@@ -36,6 +55,37 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
     .filter((club): club is ClubSummary => Boolean(club))
   const stageOpen = mode.kind !== 'pile'
   const focusedSlug = mode.kind === 'focus' ? mode.slug : null
+  // A focused card is always a card; the week only replaces the spread.
+  const showWeek = view === 'week' && mode.kind === 'spread'
+
+  const chooseView = (next: View) => {
+    if (closingRef.current) return
+    try {
+      sessionStorage.setItem(VIEW_KEY, next)
+    } catch { /* Forgetting the view between opens is fine. */ }
+    setView(next)
+    if (next === 'week' && mode.kind === 'focus') setMode({ kind: 'spread' })
+  }
+
+  useEffect(() => {
+    let timer: number | undefined
+    let taught = false
+    const onCatch = () => {
+      if (taught) return
+      try {
+        if (sessionStorage.getItem('vuwclubs:catch-taught')) return
+        sessionStorage.setItem('vuwclubs:catch-taught', '1')
+      } catch { /* The hint still works when storage is unavailable. */ }
+      taught = true
+      setCaughtHint(true)
+      timer = window.setTimeout(() => setCaughtHint(false), 1500)
+    }
+    window.addEventListener(SHORTLIST_CATCH_EVENT, onCatch)
+    return () => {
+      window.removeEventListener(SHORTLIST_CATCH_EVENT, onCatch)
+      window.clearTimeout(timer)
+    }
+  }, [])
 
   // If the focused club disappears (removed here or in another tab), fall back.
   useEffect(() => {
@@ -72,37 +122,46 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
     return () => window.removeEventListener(PILE_HIT_EVENT, onHit)
   }, [])
 
+  // Cards behind the week view are display:none; they have no box to animate.
   const cardElements = () =>
-    Array.from(rowRef.current?.querySelectorAll<HTMLElement>('.shortlist-card') ?? [])
+    Array.from(rowRef.current?.querySelectorAll<HTMLElement>('.shortlist-card') ?? []).filter(
+      (el) => el.offsetWidth > 0,
+    )
 
   const snapshot = () => {
     const map = new Map<string, DOMRect>()
-    for (const el of cardElements()) map.set(el.dataset.slug ?? '', el.getBoundingClientRect())
+    for (const el of cardElements()) {
+      const visible = el.getBoundingClientRect()
+      el.getAnimations().forEach((animation) => animation.cancel())
+      map.set(el.dataset.slug ?? '', visible)
+    }
     beforeRects.current = map
   }
 
   const open = () => {
-    enteredFrom.current = pileRef.current?.getBoundingClientRect() ?? null
+    if (closingRef.current || !clubs.length) return
+    enteredFrom.current = pileTargetRect()
     setMode({ kind: 'spread' })
   }
 
   const close = useCallback(async () => {
-    if (closing) return
+    if (closingRef.current) return
+    closingRef.current = true
     setClosing(true)
-    const target = pileRef.current?.getBoundingClientRect()
+    const target = pileTargetRect()
     const reduced = prefersReducedMotion()
     const animations = cardElements().map((el, index) => {
+      const visible = el.getBoundingClientRect()
+      const opacity = getComputedStyle(el).opacity
+      el.getAnimations().forEach((animation) => animation.cancel())
       const rect = el.getBoundingClientRect()
       if (!target || reduced) {
         return el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, fill: 'forwards' }).finished
       }
-      const dx = target.left + target.width / 2 - (rect.left + rect.width / 2)
-      const dy = target.top + target.height / 2 - (rect.top + rect.height / 2)
-      const scale = target.width / rect.width
       return el.animate(
         [
-          { transform: 'none', opacity: 1 },
-          { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, opacity: 0.4 },
+          { transform: returnTransform(rect, visible), opacity },
+          { transform: returnTransform(rect, target), opacity: 0.4 },
         ],
         { duration: MOTION_MS - 60, delay: index * (STAGGER_MS / 2), easing: MOTION_EASE, fill: 'forwards' },
       ).finished
@@ -110,15 +169,18 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
     await Promise.allSettled(animations)
     setMode({ kind: 'pile' })
     setClosing(false)
+    closingRef.current = false
     pileRef.current?.focus({ preventScroll: true })
-  }, [closing])
+  }, [])
 
   const focusCard = (slug: string) => {
+    if (closingRef.current) return
     snapshot()
     setMode({ kind: 'focus', slug })
   }
 
   const unfocus = () => {
+    if (closingRef.current) return
     snapshot()
     setMode({ kind: 'spread' })
   }
@@ -197,9 +259,10 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
     if (!stageOpen) return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    const first = rowRef.current?.querySelector<HTMLElement>(
-      focusedSlug ? `.shortlist-card[data-slug="${focusedSlug}"]` : '.shortlist-card',
-    )
+    const first =
+      rowRef.current?.querySelector<HTMLElement>(
+        focusedSlug ? `.shortlist-card[data-slug="${focusedSlug}"]` : '.shortlist-card',
+      ) ?? stageRef.current?.querySelector<HTMLElement>('.shortlist-stage__view [aria-pressed="true"]')
     first?.focus({ preventScroll: true })
 
     const onKey = (event: KeyboardEvent) => {
@@ -218,7 +281,7 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
       window.removeEventListener('keydown', onKey)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageOpen, mode])
+  }, [stageOpen, mode, showWeek])
 
   const onCardClick = (event: MouseEvent<HTMLElement>, club: ClubSummary) => {
     const target = event.target as HTMLElement
@@ -227,10 +290,32 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
     focusCard(club.slug)
   }
 
-  if (clubs.length === 0 && !stageOpen) return null
+  // While one card is open, resting the mouse on a neighbour slides to it; no
+  // click needed. Only real pointer movement counts (cards re-laying out under
+  // a still mouse don't), and a short rest filters out passing through. Touch
+  // and pen keep tapping. Spread mode stays click: there you are meant to
+  // read the cards side by side.
+  const hoverTimer = useRef<number | null>(null)
+  const cancelHover = () => {
+    if (hoverTimer.current !== null) {
+      window.clearTimeout(hoverTimer.current)
+      hoverTimer.current = null
+    }
+  }
+  const onCardPointerMove = (event: ReactPointerEvent<HTMLElement>, club: ClubSummary) => {
+    if (event.pointerType !== 'mouse') return
+    if (mode.kind !== 'focus' || mode.slug === club.slug) return cancelHover()
+    if (hoverTimer.current !== null) return
+    hoverTimer.current = window.setTimeout(() => {
+      hoverTimer.current = null
+      if (closingRef.current) return
+      focusCard(club.slug)
+    }, HOVER_FOCUS_MS)
+  }
+  useEffect(() => cancelHover, [])
 
   const count = clubs.length
-  const label = count === 1 ? '1 to read' : `${count} to read`
+  const label = caughtHint ? `saved ✓ · ${count}` : `my clubs · ${count}`
 
   return (
     <>
@@ -240,11 +325,13 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
         type="button"
         className="shortlist-pile"
         data-open={stageOpen || undefined}
-        aria-label={`${label}. Open your pile`}
+        aria-label={`${label}. Open my clubs`}
         aria-expanded={stageOpen}
+        aria-disabled={count === 0}
         onClick={open}
       >
         <span className="shortlist-pile__stack" aria-hidden="true">
+          {count === 0 && <span className="shortlist-pile__empty">save a club<br />to compare</span>}
           {clubs.slice(-PILE_VISIBLE).map((club, index) => (
             <span
               key={club.slug}
@@ -253,21 +340,45 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
             />
           ))}
         </span>
-        <span className="shortlist-pile__label">{label}</span>
+        <span className="shortlist-pile__label" aria-live="polite">{label}</span>
       </button>
 
       {stageOpen ? (
         <div
+          ref={stageRef}
           className="shortlist-stage"
           data-tone={tone}
           data-mode={mode.kind}
+          data-view={showWeek ? 'week' : 'cards'}
           data-closing={closing || undefined}
           role="dialog"
           aria-modal="true"
-          aria-label="Your pile"
+          aria-label="My clubs"
         >
           <div className="shortlist-stage__scrim" onClick={() => void close()} />
-          <div className="shortlist-stage__row" ref={rowRef}>
+          <div className="shortlist-stage__view" role="group" aria-label="Show my clubs as">
+            <button type="button" aria-pressed={!showWeek} onClick={() => chooseView('cards')}>
+              cards
+            </button>
+            <button type="button" aria-pressed={showWeek} onClick={() => chooseView('week')}>
+              week
+            </button>
+          </div>
+          {showWeek ? (
+            <WeekView
+              clubs={clubs}
+              onPick={(slug) => {
+                chooseView('cards')
+                focusCard(slug)
+              }}
+            />
+          ) : null}
+          <div
+            className="shortlist-stage__row"
+            ref={rowRef}
+            data-closing={closing || undefined}
+            hidden={showWeek}
+          >
             {clubs.map((club) => {
               const focused = focusedSlug === club.slug
               const quiet = focusedSlug !== null && !focused
@@ -283,6 +394,8 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
                   tabIndex={0}
                   aria-label={`${club.name}${focused ? '' : ', read'}`}
                   onClick={(event) => onCardClick(event, club)}
+                  onPointerMove={(event) => onCardPointerMove(event, club)}
+                  onPointerLeave={cancelHover}
                   onKeyDown={(event) => {
                     if (event.target !== event.currentTarget) return
                     if (event.key === 'Enter' || event.key === ' ') {
@@ -292,15 +405,20 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
                   }}
                 >
                   <div className="shortlist-card__bar">
+                    <span className="shortlist-card__lights" aria-hidden="true">
+                      <span className="shortlist-card__dot" />
+                      <span className="shortlist-card__dot" />
+                      <span className="shortlist-card__dot" />
+                    </span>
+                    <span className="shortlist-card__title">{club.slug}.poster</span>
                     <button
                       type="button"
-                      className="shortlist-card__close"
-                      aria-label={`Remove ${club.name} from your pile`}
+                      className="shortlist-card__remove"
+                      aria-label={`Remove ${club.name} from my clubs`}
                       onClick={() => void removeCard(club.slug)}
-                    />
-                    <span className="shortlist-card__dot" aria-hidden="true" />
-                    <span className="shortlist-card__dot" aria-hidden="true" />
-                    <span className="shortlist-card__title">{club.slug}.poster</span>
+                    >
+                      remove
+                    </button>
                   </div>
                   <div className="shortlist-card__body">
                     <div className="shortlist-card__poster" style={posterVars(club) as CSSProperties} />
@@ -332,6 +450,7 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
                           </div>
                         </dl>
                         <div className="shortlist-card__actions">
+                          {hasOwnPage(club) && <a className="shortlist-button shortlist-button--primary" href={`${club.href}#say-hi`}>come along →</a>}
                           {hasOwnPage(club) ? (
                             <a className="shortlist-button shortlist-button--primary" href={club.href}>
                               open {club.slug}
@@ -353,7 +472,7 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
                         </div>
                         <div className="shortlist-card__nav">
                           <button type="button" onClick={() => step(-1)} aria-label="Previous club">←</button>
-                          <button type="button" onClick={unfocus}>back to the pile</button>
+                          <button type="button" onClick={unfocus}>back to my clubs</button>
                           <button type="button" onClick={() => step(1)} aria-label="Next club">→</button>
                         </div>
                       </div>
@@ -364,7 +483,11 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
             })}
           </div>
           <p className="shortlist-stage__hint" aria-hidden="true">
-            {mode.kind === 'focus' ? '← → next club · esc back' : 'click a card to read · red dot removes · esc closes'}
+            {mode.kind === 'focus'
+              ? 'hover or ← → for the next club · esc back'
+              : showWeek
+                ? 'click a block to read that club · esc closes'
+                : 'click a card to read · esc closes'}
           </p>
         </div>
       ) : null}

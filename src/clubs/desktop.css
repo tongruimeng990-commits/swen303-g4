@@ -113,6 +113,9 @@
 
 /* Hero desktop */
 
+/* A desk: the words in the middle, the club's things scattered around them.
+   The copy is always the top layer, so a window drifting near it can never
+   take a click away from "come along". */
 .desk-hero {
   position: relative;
   min-height: clamp(640px, 86svh, 860px);
@@ -124,7 +127,7 @@
 
 .desk-hero__copy {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   max-width: 640px;
   text-align: center;
 }
@@ -161,7 +164,7 @@
 
 .desk-meets__caveat {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--ink-faint);
 }
 
@@ -275,16 +278,32 @@
   }
 }
 
-/* Slot positions: order matches ClubDesktopPage markup. */
-.desk-hero__objects > :nth-child(1) { left: 14%; top: 12%; --tilt: -5deg; }   /* name sticker */
+/* Slot positions: order matches ClubDesktopPage markup. The middle band
+   (roughly 28%–72% across) is left for the words; things sit at the edges. */
+.desk-hero__objects > :nth-child(1) { left: 12%; top: 11%; --tilt: -5deg; }   /* name sticker */
 .desk-hero__objects > :nth-child(2) { left: 5%; top: 46%; --tilt: 0deg; }     /* badge */
 .desk-hero__objects > :nth-child(3) { right: 7%; top: 10%; --tilt: 3deg; }    /* poster */
-.desk-hero__objects > :nth-child(4) { right: 2%; top: 25%; --tilt: 0deg; }    /* video window */
-.desk-hero__objects > :nth-child(5) { left: 18%; bottom: 7%; --tilt: 0deg; }  /* video window */
-.desk-hero__objects > :nth-child(6) { left: 34%; top: 9%; --tilt: 2deg; }     /* jpg */
-.desk-hero__objects > :nth-child(7) { right: 8%; top: 60%; --tilt: -2deg; }   /* jpg */
-.desk-hero__objects > :nth-child(8) { right: 26%; bottom: 8%; --tilt: 1deg; } /* jpg */
-.desk-hero__objects > :nth-child(9) { left: 7%; bottom: 14%; --tilt: 0deg; }  /* folder */
+.desk-hero__objects > :nth-child(4) { right: 2%; top: 27%; --tilt: 0deg; }    /* video window */
+.desk-hero__objects > :nth-child(5) { left: 3%; bottom: 4%; --tilt: 0deg; }   /* video window */
+.desk-hero__objects > :nth-child(6) { left: 32%; top: 6%; --tilt: 2deg; }     /* jpg */
+.desk-hero__objects > :nth-child(7) { right: 8%; top: 62%; --tilt: -2deg; }   /* jpg */
+.desk-hero__objects > :nth-child(8) { right: 24%; bottom: 3%; --tilt: 1deg; } /* jpg */
+.desk-hero__objects > :nth-child(9) { left: 24%; bottom: 10%; --tilt: 0deg; } /* folder */
+
+/* Laptop widths: the desk is smaller, so the second video and one photo stay
+   in the folder, and the video window is a little smaller. */
+@media (min-width: 901px) and (max-width: 1240px) {
+  .desk-hero__objects > :nth-child(5),
+  .desk-hero__objects > :nth-child(8) {
+    display: none;
+  }
+
+  .desk-hero .desk-hero__objects > .vwin-slot {
+    --vwin-width: 200px;
+  }
+
+  .desk-hero__objects > :nth-child(9) { left: 6%; bottom: 8%; }
+}
 
 /* Dragging: anything moved keeps its stacking order; the one in hand sits on top. */
 
@@ -320,6 +339,193 @@
 .desk-hero__objects[data-dragging] {
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* Trinkets: each club's own small things (src/clubs/trinkets.tsx). One
+   accent colour per club runs through them. */
+
+.desk[data-club="vucc"] { --accent: #2f7fd6; }
+.desk[data-club="vicfolk"] { --accent: #2f9a6c; }
+.desk[data-club="vuwtc"] { --accent: #e07a1f; }
+.desk[data-club="debsoc"] { --accent: #8c2f39; }
+.desk[data-club="mukume-taiko"] { --accent: #e8333a; }
+.desk[data-club="vicuke"] { --accent: #d9a81c; }
+
+.desk-hero__objects > .trinket {
+  z-index: var(--z, auto);
+}
+
+/* spots, see trinkets.tsx */
+.trinket[data-spot="a"] { left: 19%; top: 34%; }
+.trinket[data-spot="b"] { right: 19%; bottom: 20%; }
+.trinket[data-spot="c"] { right: 34%; top: 3%; }
+.trinket[data-spot="d"] { left: 40%; bottom: 6%; }
+.trinket[data-spot="f"] { right: 36%; bottom: 5%; }
+
+.trinket {
+  --tk-w: 72px;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 4px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  cursor: grab;
+}
+
+.trinket:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.trinket[data-dragging] {
+  transform: rotate(var(--tilt, 0deg)) scale(1.04);
+  filter: drop-shadow(0 14px 22px rgba(20, 20, 24, 0.22));
+}
+
+.trinket__art {
+  display: block;
+  width: var(--tk-w);
+}
+
+.trinket__art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 6px 10px rgba(20, 20, 20, 0.14));
+}
+
+.trinket__caption {
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.72);
+  font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.trinket__caption b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.trinket--text {
+  padding: 4px 8px;
+  font-size: 15px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.trinket--text[data-react] > span {
+  display: inline-block;
+  animation: tk-bounce 600ms cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+@keyframes tk-bounce {
+  0%, 100% { translate: 0 0; }
+  35% { translate: 0 -10px; }
+  65% { translate: 0 0; }
+  82% { translate: 0 -4px; }
+}
+
+/* sizes */
+.trinket[data-trinket="gauge"],
+.trinket[data-trinket="steps"],
+.trinket[data-trinket="rhythm"] { --tk-w: 122px; }
+.trinket[data-trinket="hut"] { --tk-w: 104px; }
+.trinket[data-trinket="chord"] { --tk-w: 84px; }
+.trinket[data-trinket="drum"] { --tk-w: 92px; }
+.trinket[data-trinket="paddle"],
+.trinket[data-trinket="fiddle"],
+.trinket[data-trinket="boot"] { --tk-w: 80px; }
+.trinket[data-trinket="bachi"],
+.trinket[data-trinket="helmet"],
+.trinket[data-trinket="taco"],
+.trinket[data-trinket="timer"],
+.trinket[data-trinket="poi"],
+.trinket[data-trinket="trophy"] { --tk-w: 68px; }
+.trinket[data-trinket="uke"] { --tk-w: 54px; }
+.trinket[data-trinket="pick"] { --tk-w: 44px; }
+.trinket[data-trinket="whistle"] { --tk-w: 34px; }
+
+/* reactions: every animated part transforms about its own centre */
+.trinket svg g,
+.trinket svg path,
+.trinket svg text,
+.trinket svg circle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.tk-ripples, .tk-rings, .tk-notes, .tk-mud, .tk-don, .tk-shine { opacity: 0; }
+
+.trinket[data-react] .tk-rock { animation: tk-rock 900ms ease-in-out; }
+.trinket[data-react] .tk-ripples { animation: tk-ripple 900ms ease-out 120ms; }
+.trinket[data-react] .tk-wobble { animation: tk-wobble 700ms ease-in-out; }
+.trinket[data-react] .tk-bow { animation: tk-bow 800ms ease-in-out; }
+.trinket[data-react] .tk-notes { animation: tk-notes 1000ms ease-out; }
+.trinket[data-react] .tk-step { animation: tk-pulse 360ms ease-out calc(var(--i) * 200ms) both; }
+.trinket[data-react] .tk-stomp { animation: tk-stomp 500ms cubic-bezier(0.3, 0, 0.2, 1); }
+.trinket[data-react] .tk-mud { animation: tk-mud 700ms ease-out 180ms; }
+.trinket[data-react] .tk-wiggle { animation: tk-wobble 600ms ease-in-out; }
+.trinket[data-react] .tk-swing { transform-origin: left center; animation: tk-swing 1000ms ease-in-out; }
+.trinket[data-react] .tk-pop { animation: tk-pop 500ms cubic-bezier(0.28, 0.84, 0.42, 1); }
+.trinket[data-react] .tk-raise { animation: tk-raise 600ms ease-out; }
+.trinket[data-react] .tk-bubble { animation: tk-pop 500ms cubic-bezier(0.28, 0.84, 0.42, 1); }
+.trinket[data-react] .tk-shine { animation: tk-shine 800ms ease-in-out; }
+.trinket[data-react] .tk-hit { animation: tk-hit 420ms cubic-bezier(0.3, 0, 0.2, 1); }
+.trinket[data-react] .tk-rings { animation: tk-ripple 800ms ease-out; }
+.trinket[data-react] .tk-don { animation: tk-don 800ms ease-out; }
+.trinket[data-react] .tk-stick--a { transform-origin: left bottom; animation: tk-strike-a 500ms ease-in-out; }
+.trinket[data-react] .tk-stick--b { transform-origin: left top; animation: tk-strike-b 500ms ease-in-out 60ms; }
+.trinket[data-react] .tk-beat { animation: tk-pulse 300ms ease-out calc(var(--i) * 180ms) both; }
+.trinket[data-react] .tk-strings { animation: tk-strum 600ms ease-out; }
+.trinket[data-react] .tk-dot { animation: tk-pop 400ms cubic-bezier(0.28, 0.84, 0.42, 1); }
+.trinket[data-react] .tk-spin { animation: tk-spin 800ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* these two move on their own state, not the click flash */
+.tk-needle { transform: translateX(var(--pos, 0px)); transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1); }
+.tk-ring { rotate: -90deg; transition: stroke-dashoffset 700ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+@keyframes tk-rock { 0%, 100% { rotate: 0deg; } 30% { rotate: -14deg; translate: -4px 6px; } 70% { rotate: 10deg; } }
+@keyframes tk-ripple { 0% { opacity: 0.9; scale: 0.3; } 100% { opacity: 0; scale: 1.5; } }
+@keyframes tk-wobble { 0%, 100% { rotate: 0deg; } 25% { rotate: -9deg; } 55% { rotate: 7deg; } 80% { rotate: -3deg; } }
+@keyframes tk-bow { 0%, 100% { translate: 0 0; } 50% { translate: -14px 10px; } }
+@keyframes tk-notes { 0% { opacity: 0; translate: 0 6px; } 30% { opacity: 1; } 100% { opacity: 0; translate: 6px -16px; } }
+@keyframes tk-pulse { 0% { scale: 1; opacity: 0.55; } 50% { scale: 1.25; opacity: 1; } 100% { scale: 1; opacity: 1; } }
+@keyframes tk-stomp { 0% { translate: 0 0; } 40% { translate: 0 -12px; rotate: -6deg; } 70% { translate: 0 2px; rotate: 0deg; } 100% { translate: 0 0; } }
+@keyframes tk-mud { 0% { opacity: 0; scale: 0.2; } 30% { opacity: 1; } 100% { opacity: 0; scale: 1.6; translate: 0 6px; } }
+@keyframes tk-swing { 0%, 100% { rotate: 0deg; } 25% { rotate: -7deg; } 60% { rotate: 5deg; } 85% { rotate: -2deg; } }
+@keyframes tk-pop { 0% { scale: 0.6; } 60% { scale: 1.18; } 100% { scale: 1; } }
+@keyframes tk-raise { 0% { translate: 0 0; } 40% { translate: 0 -10px; } 100% { translate: 0 0; } }
+@keyframes tk-shine { 0% { opacity: 0; translate: -6px 0; } 40% { opacity: 0.9; } 100% { opacity: 0; translate: 28px 0; } }
+@keyframes tk-hit { 0% { scale: 1; } 30% { scale: 1.08 0.9; } 65% { scale: 0.97 1.04; } 100% { scale: 1; } }
+@keyframes tk-don { 0% { opacity: 0; translate: 0 8px; scale: 0.6; } 25% { opacity: 1; scale: 1.1; } 100% { opacity: 0; translate: 0 -18px; scale: 1; } }
+@keyframes tk-strike-a { 0%, 100% { rotate: 0deg; } 45% { rotate: -22deg; } }
+@keyframes tk-strike-b { 0%, 100% { rotate: 0deg; } 45% { rotate: 22deg; } }
+@keyframes tk-strum { 0%, 100% { scale: 1 1; } 20% { scale: 1.8 1; } 40% { scale: 0.6 1; } 60% { scale: 1.4 1; } 80% { scale: 0.8 1; } }
+@keyframes tk-spin { 0% { rotate: 0turn; } 100% { rotate: 1turn; } }
+
+/* Narrower desks. The words take most of the middle, so the pocket right of
+   them (spot b) shrinks: between 1241 and 1340 it moves up to the top band,
+   left of spot c; on a laptop it goes, along with the wide-only pieces. */
+@media (min-width: 1241px) and (max-width: 1340px), (min-width: 1341px) and (max-height: 820px) {
+  .trinket[data-spot="b"] { right: auto; bottom: auto; left: 42%; top: 2%; }
+}
+
+@media (min-width: 901px) and (max-width: 1240px) {
+  .trinket[data-wide],
+  .trinket[data-spot="b"] { display: none; }
+  .trinket[data-spot="a"] { left: 17%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trinket *, .trinket--text[data-react] > span { animation: none !important; transition: none !important; }
+  .tk-notes, .tk-don { opacity: 0 !important; }
 }
 
 .desk-tidy {
@@ -448,7 +654,7 @@
   box-shadow: 0 0 0 1px var(--line);
 }
 
-/* "HELLO my name is" sticker */
+/* "KIA ORA my name is" sticker, in the university's green */
 
 .name-sticker {
   display: grid;
@@ -472,7 +678,7 @@
 .name-sticker__head {
   display: grid;
   padding: 9px 10px 8px;
-  background: #e8333a;
+  background: var(--vuw-green);
   color: #fff;
   line-height: 1;
 }
@@ -520,10 +726,27 @@
   scroll-margin-top: 90px;
 }
 
-.desk-window--mail { grid-column: span 7; }
-.desk-window--note { grid-column: span 5; }
-.desk-window--videos { grid-column: span 12; }
-.desk-window--wall { grid-column: span 7; }
+/* Row one pairs the letter with the note: the letter is a few lines of
+   monospace, the note three or four points, so at half width each they come
+   out about the same height. Row two is the video strip at full width.
+   Every window ends at its content. */
+.desk-window--mail {
+  grid-column: 1 / 6;
+  align-self: start;
+}
+.desk-window--note {
+  grid-column: 6 / 13;
+  align-self: start;
+}
+.desk-window--videos {
+  grid-column: span 12;
+  align-self: start;
+}
+.desk-window--wall {
+  grid-column: span 7;
+  /* The chat ends after its last message instead of stretching to the calendar. */
+  align-self: start;
+}
 .desk-window--events { grid-column: span 5; }
 .desk-window--contact { grid-column: span 12; }
 
@@ -542,16 +765,50 @@
   gap: 7px;
 }
 
-.mac-window__lights i {
+.mac-window__lights i,
+.mac-window__fold {
   width: 12px;
   height: 12px;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
 }
 
-.mac-window__lights i:nth-child(1) { background: #ff5f57; }
-.mac-window__lights i:nth-child(2) { background: #febc2e; }
-.mac-window__lights i:nth-child(3) { background: #28c840; }
+/* Red and green are decoration; dimmer so they don't promise anything. */
+.mac-window__lights i:nth-child(1) { background: #ff5f57; opacity: 0.55; }
+.mac-window__lights i:nth-child(3) { background: #28c840; opacity: 0.55; }
+
+/* Yellow folds the window: the only light that works, so it looks like a control. */
+.mac-window__fold {
+  position: relative;
+  background: #febc2e;
+  cursor: pointer;
+}
+
+.mac-window__fold::before {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 1.5px;
+  background: rgba(90, 60, 0, 0.75);
+  content: "";
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 120ms ease;
+}
+
+.mac-window__bar:hover .mac-window__fold::before,
+.mac-window__fold:focus-visible::before,
+.mac-window[data-folded] .mac-window__fold::before {
+  opacity: 1;
+}
+
+.mac-window__fold:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
 
 .mac-window__lights--rest i:nth-child(1) { background: #febc2e; }
 .mac-window__lights--rest i:nth-child(2) { background: #28c840; }
@@ -565,10 +822,57 @@
   color: var(--ink-soft);
   letter-spacing: 0;
   padding-right: 52px; /* visually centre against the lights */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mac-window__subtitle {
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
+.desk-window--events .mac-window__subtitle {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .mac-window__body {
   padding: 26px 28px 28px;
+}
+
+.mac-window__body[hidden] {
+  display: none;
+}
+
+.mac-window[data-folded] {
+  align-self: start;
+}
+
+/* Opening as you scroll: the window itself grows downward from just its
+   title bar to full height while the bar rises through the lower half of
+   the screen (MacWindow measures and sets both values each frame). The
+   bottom margin makes up the difference, so the window's footprint in the
+   grid stays constant and nothing below it moves. Same language as the
+   calendar growing beside the chat. */
+.mac-window[data-scroll-open] {
+  height: var(--open-height);
+  margin-bottom: var(--open-gap);
+  overflow: hidden;
+}
+
+/* Opened from the Dock: once the page has arrived, the bar catches the light. */
+.mac-window[data-flash] .mac-window__bar {
+  animation: window-bar-flash 900ms ease-out both;
+}
+
+@keyframes window-bar-flash {
+  0% { filter: brightness(1); }
+  20% { filter: brightness(1.08) saturate(1.3); }
+  100% { filter: brightness(1); }
+}
+
+.mac-window[data-folded] .mac-window__bar {
+  border-bottom: 0;
 }
 
 .mac-window__body > p {
@@ -586,7 +890,7 @@
 
 .desk-fine {
   margin-top: 18px !important;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--ink-faint);
 }
 
@@ -621,9 +925,31 @@
 .mail-footer span {
   color: var(--ink-faint);
   text-transform: uppercase;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   padding-top: 3px;
+}
+
+/* "reply" opens say-hi.mail further down the desk. */
+.mail-reply {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.mail-reply:hover {
+  text-decoration-color: var(--ink);
+}
+
+.mail-reply:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 /* videos */
@@ -637,11 +963,25 @@
   border-radius: var(--radius) var(--radius) 0 0;
 }
 
+/* One strip of clips, however many there are: equal columns, never an
+   empty cell. The strip doesn't scroll, because a scroll box would clip the
+   card that grows on hover; small cards instead grow further (see
+   VideoWindow, which aims for a 200px-high player). */
 .video-desk {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 22px 18px;
+  display: flex;
+  gap: 18px;
   margin-top: 20px;
+}
+
+.video-desk > .vwin-slot {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 400px; /* a two-clip club gets two sensible cards, not two cinemas */
+}
+
+/* In the strip a collapsed card only has room for its file name. */
+.video-desk .vwin:not([data-open]) .vwin__caption span:last-child {
+  display: none;
 }
 
 /* Video window: one shell for collapsed and expanded states.
@@ -671,6 +1011,10 @@
   position: absolute;
   width: calc(var(--w, 240px) * var(--scale, 1));
   display: grid;
+  /* minmax(0, …): the title bar's nowrap text must not set the column's
+     min-content width, or the media box widens past the card and its 16:9
+     height overflows the slot. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: var(--vwin-bar) auto var(--vwin-caption);
   background: var(--window);
   border-radius: 9px;
@@ -750,7 +1094,7 @@
 .vwin__title {
   flex: 1;
   min-width: 0;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-soft);
   text-align: center;
   white-space: nowrap;
@@ -853,7 +1197,7 @@
   border-radius: 999px;
   background: rgba(20, 20, 24, 0.72);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.01em;
   white-space: nowrap;
   pointer-events: none;
@@ -987,7 +1331,7 @@
 
 .vwin__time {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -1032,7 +1376,7 @@
   align-items: center;
   height: var(--vwin-caption);
   padding: 0 9px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-faint);
   white-space: nowrap;
 }
@@ -1091,45 +1435,95 @@
   background: #fff9c9;
 }
 
-.note-list {
+/* One short list, ruled like a pad. Bring/don't items join the same list
+   with a ✓ or ✗ in the margin; costs are a single line underneath. */
+.note-sheet {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.note-points {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 17px;
-  line-height: 1.45;
 }
 
-.note-list li {
+.note-points li {
   position: relative;
-  padding: 10px 0 10px 26px;
+  padding: 8px 0 8px 24px;
   border-bottom: 1px solid rgba(20, 20, 20, 0.1);
 }
 
-.note-list li:last-child {
+.note-points li:last-child {
   border-bottom: 0;
 }
 
-.note-list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 17px;
-  width: 12px;
-  height: 12px;
-  border: 1.5px solid var(--ink);
-  border-radius: 3px;
-}
-
-.note-list li::after {
+.note-points li::before {
   content: "";
   position: absolute;
   left: 4px;
   top: 17px;
-  width: 4px;
-  height: 8px;
-  border-right: 1.5px solid var(--ink);
-  border-bottom: 1.5px solid var(--ink);
-  transform: rotate(45deg);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.note-points li[data-mark]::before {
+  display: none;
+}
+
+.note-points li[data-mark] > span:first-child {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  font-weight: 700;
+}
+
+.note-points li[data-mark="no"] > span:first-child {
+  color: #b3261e;
+}
+
+/* when / costs: two labelled lines under the list, same ruling as the letter's header. */
+.note-lines {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(20, 20, 20, 0.25);
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.note-lines > div {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+}
+
+.note-lines dt {
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding-top: 2px;
+}
+
+.note-lines dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  margin: 0;
+}
+
+.note-lines dd > span {
+  white-space: nowrap;
+}
+
+.note-lines b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 /* quote wall */
@@ -1221,7 +1615,7 @@
 }
 
 .contact-list span {
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--ink-faint);
@@ -1239,15 +1633,23 @@
 /* footer */
 
 .desk-footer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 12px;
   padding: 0 5% 40px;
   max-width: 1360px;
   margin: 0 auto;
   font-size: 13px;
   color: var(--ink-faint);
+}
+
+.desk-footer__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.desk-footer .colophon {
+  margin-top: 40px;
+  color: var(--ink-soft);
 }
 
 .desk-footer a:hover {
@@ -1378,9 +1780,24 @@
 @media (max-width: 900px) {
   .desk-window--mail,
   .desk-window--note,
+  .desk-window--videos,
   .desk-window--wall,
   .desk-window--events {
     grid-column: span 12;
+    grid-row: auto;
+  }
+
+  .video-desk {
+    flex-direction: column;
+  }
+
+  .video-desk > .vwin-slot {
+    flex: none;
+    max-width: none;
+  }
+
+  .video-desk .vwin:not([data-open]) .vwin__caption span:last-child {
+    display: inline;
   }
 
   .desk-hero {
@@ -1393,13 +1810,17 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: flex-start;
     gap: 10px 6px;
+    min-height: 0;
     margin: 0 0 28px;
     order: -1;
   }
 
-  .desk-hero__objects > * {
+  .desk-hero__objects > *,
+  .desk-hero__objects > :nth-child(n) {
     position: static;
+    inset: auto; /* slot offsets are for the scattered desk only */
     translate: none; /* saved desk positions only apply to the scattered layout */
     z-index: auto;
   }
@@ -1419,6 +1840,7 @@
 
   .desk-hero__objects > .vwin-slot {
     position: relative;
+    inset: auto;
     --vwin-width: min(240px, calc(100vw - 10%));
   }
 
@@ -1451,7 +1873,7 @@
   }
 
   .desk-icon__label {
-    font-size: 11px;
+    font-size: 12px;
     max-width: 84px;
   }
 
@@ -1474,7 +1896,10 @@
 }
 
 @media (max-width: 640px) {
+  /* Two rows tall on a phone: if it stayed stuck it would hide every window
+     title you jump to. It scrolls away with the page instead. */
   .desk-header {
+    position: static;
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
@@ -1516,5 +1941,295 @@
   .desk *::before,
   .desk *::after {
     transition-duration: 0ms !important;
+  }
+}
+
+/* Iteration 2: the name is the hero's first read. */
+.desk-hero__title { font-size: clamp(40px, 6vw, 80px); margin-bottom: 18px; }
+.desk-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.desk-tags li { padding: 4px 8px; border: 1px solid var(--ink); border-radius: 2px; background: #fff; font-size: 13px; }
+.desk-hero__subtitle { margin: 18px 0 24px; font-size: 17px; line-height: 1.5; }
+.desk-window--events .mac-window__bar { background: #e8333a; color: #fff; }
+.calendar-group h3 { font-size: 13px; font-weight: 600; margin: 24px 0 12px; }
+.calendar-events { padding: 0; margin: 0; list-style: none; }
+.calendar-events > li { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.calendar-tile { flex: 0 0 62px; min-height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 1px solid var(--line); border-top: 4px solid #e8333a; border-radius: 5px; }
+.calendar-tile strong { font-size: 24px; line-height: 1.2; }
+.calendar-tile small { font-size: 12px; }
+.calendar-copy { flex: 1; min-width: 0; }
+.calendar-copy h4 { margin: 0 0 5px; font-size: 15px; }
+.calendar-copy p { margin: 4px 0; font-size: 14px; }
+.calendar-poster { width: 68px; height: 76px; object-fit: contain; }
+@media (max-width: 480px) { .calendar-events > li { flex-wrap: wrap; } .calendar-copy { flex-basis: calc(100% - 76px); } .calendar-poster { margin-left: 76px; } }
+
+.desk-window--contact .mac-window__bar { background: #e3ecfb; }
+.mail-compose { display: grid; gap: 12px; }
+.mail-compose label { display: grid; gap: 5px; font-size: 12px; }
+.mail-compose input, .mail-compose textarea { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 3px; background: #fff; color: var(--ink); font: inherit; font-size: 14px; }
+.mail-compose textarea { resize: vertical; line-height: 1.5; }
+.mail-compose input[readonly] { background: var(--paper); }
+.mail-compose__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.mail-compose__status { min-height: 1.5em; margin: 0; font-size: 13px; }
+.desk-window--contact .contact-list { border-top: 1px solid var(--line); padding-top: 18px; margin-top: 18px; }
+
+/* ---- say-hi.mail: sign up / ask a question (iteration 2, stage 8) -------- */
+.join { display: grid; gap: 16px; }
+.join__proto { margin: 0; padding: 10px 12px; border-radius: 3px; background: #fff3b0; color: #4a3f00; font-size: 13px; line-height: 1.5; }
+.join__proto span { margin-right: 6px; }
+
+.join__tabs { display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--paper-deep); width: max-content; max-width: 100%; }
+.join__tab { padding: 8px 16px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-soft); font: inherit; font-size: 14px; cursor: pointer; transition: background 160ms ease, color 160ms ease; }
+.join__tab[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 0 rgba(20, 20, 20, 0.08); }
+.join__tab:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.join__form { display: grid; gap: 14px; }
+.join__row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.join__field { display: grid; gap: 5px; }
+.join__field label { font-size: 13px; color: var(--ink-soft); }
+.join__field input, .join__field textarea { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid var(--line); border-radius: 3px; background: #fff; color: var(--ink); font: inherit; font-size: 15px; transition: border-color 160ms ease; }
+.join__field textarea { resize: vertical; line-height: 1.5; }
+.join__field input:focus-visible, .join__field textarea:focus-visible { outline: 0; border-color: var(--ink); }
+.join__field input:disabled, .join__field textarea:disabled { background: var(--paper); color: var(--ink-soft); }
+.join__field[data-invalid] input, .join__field[data-invalid] textarea { border-color: #d3262c; }
+.join__error { font-size: 13px; color: #b8151b; }
+
+.join__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -4px; }
+.join__chip { padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; transition: border-color 160ms ease, background 160ms ease; }
+.join__chip:hover { border-color: var(--ink); }
+.join__chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.join__chip:disabled { opacity: 0.5; cursor: default; }
+
+.join__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.join__small { font-size: 13px; color: var(--ink-faint); }
+
+/* The submit button is its own receipt: label, then a ring, then a check. */
+.join__submit { position: relative; gap: 10px; min-width: 128px; justify-content: center; }
+.join__submit:disabled { opacity: 1; cursor: default; transform: none; }
+.join__submit-icon { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: -4px; }
+.join__ring { stroke-dasharray: 47; stroke-dashoffset: 47; transform-origin: 50% 50%; opacity: 0; transition: opacity 160ms ease; }
+.join__check { stroke-dasharray: 16; stroke-dashoffset: 16; opacity: 0; }
+.join__submit[data-phase="idle"] .join__submit-icon { width: 0; margin: 0; overflow: hidden; }
+.join__submit[data-phase="sending"] .join__ring { opacity: 1; stroke-dashoffset: 12; animation: join-spin 800ms linear infinite; }
+.join__submit[data-phase="sent"] .join__check { opacity: 1; animation: join-draw 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.desk .join__submit[data-phase="sent"] { background: #1f6d3a; border-color: #1f6d3a; }
+@keyframes join-spin { to { transform: rotate(360deg); } }
+@keyframes join-draw { to { stroke-dashoffset: 0; } }
+
+.join__sent { margin: 0; font-size: 15px; line-height: 1.55; color: var(--ink); opacity: 0; transform: translateY(6px); transition: opacity 240ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1); }
+.join__sent:empty { display: none; }
+.join__sent[data-visible] { opacity: 1; transform: none; }
+.join__again { margin-left: 10px; padding: 0; border: 0; background: none; color: var(--ink-soft); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
+
+.join__mail { border-top: 1px solid var(--line); padding-top: 14px; }
+.join__mail summary { cursor: pointer; font-size: 14px; color: var(--ink-soft); list-style: none; }
+.join__mail summary::-webkit-details-marker { display: none; }
+.join__mail summary::before { content: "▸"; display: inline-block; margin-right: 8px; transition: transform 160ms ease; }
+.join__mail[open] summary::before { transform: rotate(90deg); }
+.join__mail[open] summary { margin-bottom: 14px; }
+
+@media (max-width: 520px) { .join__row { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) {
+  .join__submit[data-phase="sending"] .join__ring { animation: none; stroke-dashoffset: 0; opacity: 0.6; }
+  .join__submit[data-phase="sent"] .join__check { animation: none; stroke-dashoffset: 0; }
+  .join__sent { transition: none; transform: none; }
+}
+
+.desk-window--wall .mac-window__bar { background: #dce9df; }
+.club-chat { display: grid; gap: 20px; }
+.chat-message { display: flex; gap: 10px; margin: 0; align-items: flex-start; }
+.chat-message > div { min-width: 0; flex: 1; }
+.chat-avatar { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; overflow: hidden; border-radius: 50%; background: #e3ecfb; font-size: 12px; }
+.chat-avatar img { width: 100%; height: 100%; object-fit: contain; }
+.chat-message figcaption { margin: 0 0 6px; font-size: 12px; color: var(--ink-soft); }
+.chat-message blockquote { padding: 14px 16px; margin: 0; border-radius: 3px 16px 16px 16px; background: #ededeb; font-size: 14px; line-height: 1.6; }
+.chat-message[data-alternate] blockquote { background: #e3ecfb; }
+
+.vwin__progress { height: 5px; transition: opacity 160ms ease, height 160ms ease; }
+.vwin__progress:hover { height: 8px; }
+.vwin[data-open] .vwin__time { opacity: 1; }
+.vwin[data-open] .vwin__controls { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .vwin__progress { transition: none; } }
+
+/* Chat and calendar share a scroll section, but keep independent content heights. */
+.club-conversation { grid-column: span 12; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; gap: 28px; }
+.club-conversation > .mac-window { grid-column: auto; min-width: 0; scroll-margin-top: 90px; }
+.club-conversation .club-chat { display: block; }
+.chat-reveal { display: grid; grid-template-rows: 1fr; }
+.chat-reveal__inner { overflow: hidden; min-height: 0; }
+.chat-reveal + .chat-reveal .chat-reveal__inner { padding-top: 20px; }
+.club-conversation[data-scroll-chat] .desk-window--wall { position: sticky; top: var(--chat-sticky-top, 80px); }
+.club-conversation[data-scroll-chat] .desk-window--events { position: sticky; top: var(--calendar-sticky-top, 80px); }
+.club-conversation[data-scroll-chat] .chat-reveal { grid-template-rows: minmax(0, var(--chat-row, 1fr)); opacity: var(--chat-open, 1); }
+.club-conversation[data-scroll-chat] .chat-reveal + .chat-reveal .chat-reveal__inner { padding-top: calc(var(--chat-open, 1) * 20px); }
+@media (max-width: 900px) { .club-conversation { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
+@media (prefers-reduced-motion: reduce) { .club-conversation[data-scroll-chat] .desk-window--wall { position: static; } }
+
+/* ---- The Dock ------------------------------------------------------------ */
+
+.dock {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  z-index: 38;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.dock__bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 66px;
+  padding: 0 8px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 0 0 1px rgba(20, 20, 20, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 18px 40px -18px rgba(20, 20, 24, 0.45);
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  pointer-events: auto;
+}
+
+.dock__item {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 54px;
+  height: 66px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  /* --m is the magnification, written by the pointer; 1 at rest. */
+  --m: 1;
+}
+
+.dock__icon {
+  position: absolute;
+  bottom: 8px;
+  width: 46px;
+  height: 46px;
+  transform-origin: 50% 100%;
+  transform: scale(var(--m));
+  transition: transform 120ms ease-out;
+  filter: drop-shadow(0 4px 6px rgba(20, 20, 24, 0.22));
+}
+
+.dock__icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.dock__dot {
+  position: absolute;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ink);
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.dock__item[data-active] .dock__dot {
+  opacity: 0.8;
+}
+
+.dock__item[data-bounce] .dock__icon {
+  animation: dock-bounce 640ms cubic-bezier(0.28, 0.84, 0.42, 1) 1;
+}
+
+@keyframes dock-bounce {
+  0%, 100% { translate: 0 0; }
+  30% { translate: 0 -18px; }
+  55% { translate: 0 0; }
+  75% { translate: 0 -7px; }
+}
+
+.dock__tip {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(20, 20, 20, 0.9);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition: opacity 140ms ease, transform 140ms ease;
+  pointer-events: none;
+}
+
+.dock__tip b {
+  font-weight: 600;
+}
+
+.dock__tip span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dock__tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  border: 5px solid transparent;
+  border-top-color: rgba(20, 20, 20, 0.9);
+  transform: translateX(-50%);
+}
+
+.dock__item:hover .dock__tip,
+.dock__item:focus-visible .dock__tip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.dock__item:focus-visible {
+  outline: 0;
+}
+
+.dock__item:focus-visible .dock__icon {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+/* The Dock is the page's section nav on anything bigger than a phone. */
+@media (min-width: 641px) {
+  .desk-header nav {
+    display: none;
+  }
+
+  .desk-footer {
+    padding-bottom: 110px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dock {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock__icon {
+    transition: none;
+  }
+
+  .dock__item[data-bounce] .dock__icon {
+    animation: none;
+  }
+
+  .mac-window[data-flash] .mac-window__bar {
+    animation: none;
   }
 }

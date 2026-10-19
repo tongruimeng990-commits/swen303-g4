@@ -159,7 +159,7 @@ a.club-row__name:focus-visible {
 
 .club-row__name--static small {
   margin-left: 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--sl-ink-faint);
 }
@@ -167,6 +167,12 @@ a.club-row__name:focus-visible {
 .club-row__blurb {
   font-size: 14px;
   color: var(--sl-ink-soft);
+}
+
+/* Why a search hit this row when its name did not match ("also: debating society"). */
+.club-row__alias {
+  font-size: 12px;
+  color: var(--sl-ink-faint);
 }
 
 .club-row__when {
@@ -181,7 +187,7 @@ a.club-row__name:focus-visible {
   padding: 4px 10px;
   border: 1px solid var(--sl-line);
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.02em;
   text-align: center;
   color: var(--sl-ink-faint);
@@ -619,61 +625,59 @@ body:has(.shortlist-stage) .club-preview {
   border-bottom: 1px solid rgba(20, 20, 20, 0.08);
 }
 
-.shortlist-card__close,
-.shortlist-card__dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+/* The three lights are decoration here; removing is a word, not a dot
+   (user test 1: nobody found the red dot). */
+.shortlist-card__lights {
+  display: inline-flex;
+  gap: 6px;
   flex: 0 0 auto;
 }
 
-.shortlist-card__close {
-  position: relative;
-  padding: 0;
-  border: 0;
-  background: #ff5f57;
-  cursor: pointer;
+.shortlist-card__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  opacity: 0.55;
 }
 
-.shortlist-card__close::before,
-.shortlist-card__close::after {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 6px;
-  height: 1.5px;
-  background: rgba(60, 0, 0, 0.7);
-  content: "";
-  opacity: 0;
-  transform: translate(-50%, -50%) rotate(45deg);
-  transition: opacity 120ms ease;
-}
-
-.shortlist-card__close::after {
-  transform: translate(-50%, -50%) rotate(-45deg);
-}
-
-.shortlist-card:hover .shortlist-card__close::before,
-.shortlist-card:hover .shortlist-card__close::after,
-.shortlist-card__close:focus-visible::before,
-.shortlist-card__close:focus-visible::after {
-  opacity: 1;
-}
-
-.shortlist-card__dot:nth-of-type(1) {
-  background: #febc2e;
-}
-
-.shortlist-card__dot:nth-of-type(2) {
-  background: #28c840;
-}
+.shortlist-card__dot:nth-of-type(1) { background: #ff5f57; }
+.shortlist-card__dot:nth-of-type(2) { background: #febc2e; }
+.shortlist-card__dot:nth-of-type(3) { background: #28c840; }
 
 .shortlist-card__title {
   flex: 1;
+  min-width: 0;
   text-align: center;
-  font-size: 11px;
-  color: #6b6b68;
-  padding-right: 38px; /* balance the lights */
+  font-size: 12px;
+  color: #5f5f5c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shortlist-card__bar .shortlist-card__remove {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--sl-ink-soft);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.shortlist-card__bar .shortlist-card__remove:hover,
+.shortlist-card__bar .shortlist-card__remove:focus-visible {
+  color: #b5252b;
+  border-color: rgba(181, 37, 43, 0.4);
+  background: #fff;
+}
+
+.shortlist-card[data-quiet] .shortlist-card__remove {
+  display: none;
 }
 
 .shortlist-card__body {
@@ -701,14 +705,14 @@ body:has(.shortlist-stage) .club-preview {
 .shortlist-card__note {
   position: relative;
   z-index: 1;
-  width: 156px;
+  width: 168px;
   margin: -22px 12px 12px auto;
   padding: 10px 10px 12px;
   display: grid;
   gap: 2px;
   background: var(--sl-note);
   color: #3a3a2a;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.4;
   transform: rotate(-2deg);
   box-shadow: 0 8px 16px -10px rgba(0, 0, 0, 0.55);
@@ -990,5 +994,377 @@ body:has(.shortlist-stage) .club-preview {
 
   .shortlist-card[data-quiet] {
     transform: none;
+  }
+}
+
+/* Iteration 2: a visible desk object, including before the first catch. */
+.shortlist-pile__stack { width: 112px; height: 112px; }
+.shortlist-pile__card { width: 94px; max-height: 104px; }
+.shortlist-pile__label { font-size: 13px; border-radius: 2px; border: 1px solid rgba(255,255,255,.3); }
+.shortlist-pile__empty { display: grid; place-items: center; width: 100%; height: 100%; border: 1px dashed #858581; border-radius: 5px; background: var(--sl-paper); color: var(--sl-ink-soft); font-size: 12px; line-height: 1.5; }
+.shortlist-stage__row[data-closing] { pointer-events: none; }
+@media (max-width: 680px) { .shortlist-pile__stack { width: 92px; height: 92px; } .shortlist-pile__card { width: 78px; max-height: 86px; } }
+.brand, .desk-brand { position: relative; }
+.brand:hover, .desk-brand:hover, .brand:focus-visible, .desk-brand:focus-visible { text-decoration: underline; text-underline-offset: 5px; }
+.brand::before, .desk-brand::before { position: absolute; right: calc(100% + 5px); content: '←'; opacity: 0; transform: translateX(4px); transition: opacity 160ms ease, transform 160ms ease; }
+.brand:hover::before, .desk-brand:hover::before, .brand:focus-visible::before, .desk-brand:focus-visible::before { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .brand::before, .desk-brand::before { transition: none; } }
+
+/* ---- Stage 11: cards | week ---------------------------------------------- */
+
+.shortlist-stage__view {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(20, 20, 20, 0.1), 0 12px 30px -18px rgba(0, 0, 0, 0.6);
+  animation: shortlist-fade 200ms ease both;
+}
+
+.shortlist-stage__view button {
+  min-height: 32px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--sl-ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.shortlist-stage__view button:hover {
+  color: var(--sl-ink);
+}
+
+.shortlist-stage__view button[aria-pressed="true"] {
+  background: var(--sl-ink);
+  color: #fff;
+}
+
+.shortlist-stage[data-closing] .shortlist-stage__view {
+  animation: shortlist-fade 200ms ease both reverse;
+}
+
+/* Cards wait behind the week; the flex rule above would otherwise beat [hidden]. */
+.shortlist-stage__row[hidden] {
+  display: none;
+}
+
+/* The week sheet: same paper as a card, wide, scrolls inside. */
+.week {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(1040px, 100%);
+  max-height: calc(100vh - 150px);
+  max-height: calc(100dvh - 150px);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--sl-ink);
+  box-shadow: 0 0 0 1px rgba(20, 20, 20, 0.08), 0 30px 60px -30px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  animation: week-in 260ms var(--sl-ease) both;
+}
+
+@keyframes week-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.shortlist-stage[data-closing] .week {
+  animation: shortlist-fade 180ms ease both reverse;
+  pointer-events: none;
+}
+
+.week__status {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--sl-line);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.week__status p,
+.week__clashes {
+  margin: 0;
+}
+
+.week__status p {
+  color: var(--sl-ink-soft);
+}
+
+.week__clashes {
+  display: grid;
+  gap: 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.week__clashes li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.week__clashes strong {
+  font-weight: 600;
+}
+
+.week__clash-mark {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e8333a;
+  transform: translateY(1px);
+}
+
+.week__scroll {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.week__grid {
+  --axis: 56px;
+  display: grid;
+  grid-template-columns: var(--axis) repeat(7, minmax(84px, 1fr));
+  min-width: 660px;
+  padding: 0 16px 18px 0;
+}
+
+.week__axis {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  grid-row: 1;
+  padding-top: 44px;
+  height: calc(var(--hours) * var(--hour-px) + 44px);
+  background: #fff;
+}
+
+.week__axis span {
+  margin-top: 44px;
+}
+
+.week__axis span {
+  position: absolute;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sl-ink-faint);
+  white-space: nowrap;
+}
+
+.week__day {
+  position: relative;
+  border-left: 1px solid var(--sl-line);
+}
+
+.week__day[data-today] {
+  background: rgba(20, 20, 20, 0.025);
+}
+
+.week__day-label {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  height: 44px;
+  padding: 14px 10px 0;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sl-ink-soft);
+}
+
+.week__day[data-today] .week__day-label {
+  color: var(--sl-ink);
+  background: #f9f9f8;
+}
+
+.week__day-label small {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--sl-ink-faint);
+}
+
+.week__column {
+  position: relative;
+  height: calc(var(--hours) * var(--hour-px));
+}
+
+.week__line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--sl-line);
+}
+
+/* One session. Name and time only; the card says the rest. */
+.week__block {
+  position: absolute;
+  left: 6px;
+  width: calc(100% - 12px);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 9px;
+  border: 1px solid rgba(20, 20, 20, 0.14);
+  border-left: 4px solid var(--sl-ink);
+  border-radius: 6px;
+  background: var(--sl-paper);
+  color: var(--sl-ink);
+  font: inherit;
+  text-align: left;
+  line-height: 1.25;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 8px 18px -14px rgba(0, 0, 0, 0.5);
+  transition: transform 160ms var(--sl-ease), box-shadow 160ms ease;
+}
+
+.week__block:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px -14px rgba(0, 0, 0, 0.55);
+}
+
+.week__block-name,
+.week__block-time,
+.week__block-open {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.week__block-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.week__block-time {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sl-ink-soft);
+}
+
+.week__block-open {
+  margin-top: auto;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--sl-ink-faint);
+}
+
+/* No published end: the hour we draw trails off. */
+.week__block[data-open-end] {
+  border-bottom: 1px dashed rgba(20, 20, 20, 0.4);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background:
+    linear-gradient(to bottom, var(--sl-paper) 55%, rgba(244, 244, 242, 0.5)),
+    repeating-linear-gradient(-45deg, transparent 0 5px, rgba(20, 20, 20, 0.07) 5px 6px);
+}
+
+/* Two on the same night: both go red, and the status line above says so. */
+.week__block[data-clash] {
+  border-color: #e8333a;
+  border-left-color: #e8333a;
+  border-width: 2px;
+  border-left-width: 4px;
+  background-color: #fff3f3;
+}
+
+.week__block[data-clash][data-open-end] {
+  background:
+    linear-gradient(to bottom, #fff3f3 55%, rgba(255, 243, 243, 0.5)),
+    repeating-linear-gradient(-45deg, transparent 0 5px, rgba(232, 51, 58, 0.14) 5px 6px);
+}
+
+.week__block[data-clash] .week__block-time {
+  color: #b5252b;
+}
+
+.week__unplaced {
+  margin: 0;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--sl-line);
+  font-size: 13px;
+  color: var(--sl-ink-soft);
+}
+
+.week__unplaced button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--sl-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (max-width: 680px) {
+  .shortlist-stage {
+    padding: 72px 12px 64px;
+  }
+
+  /* The stage scrolls on phones; the switch stays put. */
+  .shortlist-stage__view {
+    position: fixed;
+    top: 16px;
+  }
+
+  .week {
+    max-height: calc(100vh - 136px);
+    max-height: calc(100dvh - 136px);
+  }
+
+  .week__status {
+    padding: 14px 16px 12px;
+    font-size: 13px;
+  }
+
+  /* Phones scroll sideways; columns stay wide enough to read a name. */
+  .week__grid {
+    --axis: 48px;
+    grid-template-columns: var(--axis) repeat(7, 112px);
+    min-width: 0;
+    width: max-content; /* the box must be as wide as its columns for the sticky axis to hold */
+  }
+
+  .week__unplaced {
+    padding: 10px 16px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shortlist-stage__view,
+  .week {
+    animation: none;
+  }
+
+  .week__block,
+  .shortlist-stage__view button {
+    transition: none;
   }
 }

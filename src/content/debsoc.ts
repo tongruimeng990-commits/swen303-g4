@@ -13,38 +13,44 @@ export const debsocDesktop: ClubDesktopContent = {
   slug: 'debsoc',
   name: 'Vic Debsoc',
   fullName: 'Victoria University of Wellington Debating Society',
-  hello:
-    'hello, we’re vic debsoc. learn to speak, learn to convince. wednesdays in kk301 since 1899. no experience necessary.',
+  tags: ["debating", "beginner grades", "socials"],
+  intro: "learn to speak and convince, with a grade for every level.",
+  letter: {
+    "subject": "a note from debsoc",
+    "greeting": "kia ora debaters,",
+    "body": "no experience necessary. internal grades cater to total beginners and experienced speakers. pro-am tournaments pair novices with experienced debaters to learn a new style.",
+    "signoff": "the debsoc exec"
+  },
+  costs: []
+,
+  bring: {
+    "yes": [],
+    "no": []
+  },
+  essentials: [
+    'no experience necessary. the internal grades cater to total beginners.',
+    'pro-am tournaments pair a novice with an experienced debater.',
+    'it’s a social club too: cheap byo dinners, pizza, the regressive.',
+  ],
+  goodToKnow: [
+    "no experience necessary. the internal grades cater to total beginners.",
+    "formed in 1899, before victoria college even opened. the same students went on to found the students’ association.",
+    "new zealand’s most successful university debating society: australs grand finals, world championship semi-finals (2008), a cambridge union iv win (2007).",
+    "pro-am tournaments: a novice pairs with an experienced debater.",
+    "a registered charity run by an eleven-person exec. it also organises debating in wellington secondary schools.",
+    "it’s a social club too: vic champs at a cheap byo restaurant, the regressive at the kelburn scout hall, pizza at the agm.",
+    "AGM means annual general meeting."
+  ],
   meets: {
     line: 'wednesdays 6:30pm',
     room: 'KK301, Kirk Building, Kelburn',
     caveat: 'during trimester the wednesday meetings are the internal debating grades · last checked oct 2026',
     directions: 'KK301 is room 301 in the Kirk Building on Kelburn campus.',
   },
-  thisWeek: {
-    subject: 'this week at debsoc: wednesday grades, kk301',
-    lines: [
-      'kia ora debaters,',
-      'wednesday 6:30pm, kk301. internal grades run during trimester: there’s a grade for total beginners and grades for experienced speakers.',
-      'pro-am tournaments pair novices with some of the society’s best debaters to learn a new style.',
-      'no experience necessary. come along.',
-      'see you wednesday,',
-      'the debsoc exec',
-    ],
-  },
-  firstTime: [
-    'no experience necessary. the internal grades cater to total beginners.',
-    'formed in 1899, before victoria college even opened. the same students went on to found the students’ association.',
-    'new zealand’s most successful university debating society: australs grand finals, world championship semi-finals (2008), a cambridge union iv win (2007).',
-    'pro-am tournaments: a novice pairs with an experienced debater.',
-    'a registered charity run by an eleven-person exec. it also organises debating in wellington secondary schools.',
-    'it’s a social club too: vic champs at a cheap byo restaurant, the regressive at the kelburn scout hall, pizza at the agm.',
-  ],
   watch: {
     file: 'joynt-scroll-final.mov',
     lead: 'full rounds from the society’s channel — nationals, australs and the in-house vic champs — plus the vuwsa × debsoc politicians-versus-students debate.',
   },
-  quotesFile: 'in-their-words.txt',
   quotes: [
     {
       text: 'Learn to speak. Learn to convince. Learn to take the W.',
@@ -67,8 +73,8 @@ export const debsocDesktop: ClubDesktopContent = {
       by: 'vic debsoc, on the agm',
     },
   ],
-  comingUp: [
-    { name: 'Wednesday grades', when: 'every wednesday 6:30pm in trimester', where: 'KK301' },
+  events: [
+    { name: 'Wednesday grades', when: 'every wednesday 6:30pm in trimester', time: '6:30pm', weekday: 3, where: 'KK301' },
     { name: 'Joynt Scroll (nationals)', when: 'around april', note: 'squad announced in march' },
     { name: 'Vic Champs', when: 'end of trimester 1', where: 'a cheap wellington byo restaurant', note: 'six first-years tackle a ridiculous motion' },
     { name: 'Officers Cup', when: 'around august', note: 'squad announced late july' },

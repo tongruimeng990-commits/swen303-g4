@@ -194,7 +194,7 @@ const writeWait = (value: boolean) => {
 }
 
 const HINT_KEY = 'vuwclubs:golem-hinted'
-const HINT = 'I’ll be over here. click me to talk — or to have me tag along.'
+const HINT = 'kia ora. I’ll be over here — click me to talk, or to have me tag along.'
 const readHinted = () => {
   try {
     return localStorage.getItem(HINT_KEY) === '1'
@@ -272,6 +272,7 @@ function StoneMan({ brain, boundaryTop, restingSpot, mode, hitRef, anchorRef, la
   const armL = useRef<THREE.Mesh>(null)
   const armR = useRef<THREE.Mesh>(null)
   const shadow = useRef<THREE.Mesh>(null)
+  const tassel = useRef<THREE.Group>(null)
   const debrisRefs = useRef<Array<THREE.Mesh | null>>([])
   const lastDom = useRef({ x: Infinity, y: Infinity })
   const lastAlpha = useRef(-1)
@@ -290,6 +291,10 @@ function StoneMan({ brain, boundaryTop, restingSpot, mode, hitRef, anchorRef, la
   const moss = useMemo(() => new THREE.MeshStandardMaterial({ color: '#86a66b', roughness: 1 }), [])
   const eyeWhite = useMemo(() => new THREE.MeshStandardMaterial({ color: '#fbfbf8', roughness: 0.5 }), [])
   const ink = useMemo(() => new THREE.MeshStandardMaterial({ color: '#1d1c1a', roughness: 0.6 }), [])
+  // Graduation regalia: a black gown and mortarboard, and a hood in the
+  // university's green. He graduated a while ago; the moss is still there.
+  const gown = useMemo(() => new THREE.MeshStandardMaterial({ color: '#25262c', roughness: 0.88, metalness: 0 }), [])
+  const hood = useMemo(() => new THREE.MeshStandardMaterial({ color: '#1b7d52', roughness: 0.7, metalness: 0 }), [])
   const debrisMaterial = useMemo(
     () => new THREE.MeshStandardMaterial({ color: '#8f8a7f', roughness: 1, transparent: true }),
     [],
@@ -299,9 +304,9 @@ function StoneMan({ brain, boundaryTop, restingSpot, mode, hitRef, anchorRef, la
     () => () => {
       bodyGeometry.dispose()
       shadowTexture.dispose()
-      for (const material of [stone, stoneDark, moss, eyeWhite, ink, debrisMaterial]) material.dispose()
+      for (const material of [stone, stoneDark, moss, eyeWhite, ink, gown, hood, debrisMaterial]) material.dispose()
     },
-    [bodyGeometry, shadowTexture, stone, stoneDark, moss, eyeWhite, ink, debrisMaterial],
+    [bodyGeometry, shadowTexture, stone, stoneDark, moss, eyeWhite, ink, gown, hood, debrisMaterial],
   )
 
   useFrame((_, rawDt) => {
@@ -585,6 +590,11 @@ function StoneMan({ brain, boundaryTop, restingSpot, mode, hitRef, anchorRef, la
         p.lift * 4 + reachR * 6,
       )
     }
+    // the tassel hangs: it swings with the walk and trails a lean
+    if (tassel.current) {
+      tassel.current.rotation.z = (walking ? Math.sin(b.walkPhase + 0.8) * 0.45 : 0) + p.lean * 0.6 + p.hop * 0.3
+      tassel.current.rotation.x = -(walking ? 0.12 : 0) - p.lift * 0.3
+    }
     if (shadow.current) {
       const lift = Math.max(0, bob + p.kick * 3 + p.hop * 10)
       shadow.current.scale.set((1 - lift * 0.03) * (HEIGHT / RIG_HEIGHT), (1 - lift * 0.03) * (HEIGHT / RIG_HEIGHT), 1)
@@ -674,25 +684,74 @@ function StoneMan({ brain, boundaryTop, restingSpot, mode, hitRef, anchorRef, la
         <mesh ref={legR} material={stoneDark} position={[8, 6, 0]}>
           <sphereGeometry args={[6.5, 18, 14]} />
         </mesh>
+        {/* gown: open at the front, so the stone chest shows between the lapels */}
+        <mesh material={gown} position={[0, 17.5, -5]}>
+          <boxGeometry args={[36, 31, 20]} />
+        </mesh>
+        <mesh material={gown} position={[-12.5, 18, 6.5]} rotation={[0, 0, 0.06]}>
+          <boxGeometry args={[8, 30, 14]} />
+        </mesh>
+        <mesh material={gown} position={[12.5, 18, 6.5]} rotation={[0, 0, -0.06]}>
+          <boxGeometry args={[8, 30, 14]} />
+        </mesh>
         <mesh ref={body} geometry={bodyGeometry} material={stone} position={[0, 19, 0]} />
         <mesh ref={armL} material={stoneDark} position={[-19, 20, 0]}>
           <sphereGeometry args={[5.5, 16, 12]} />
+          {/* sleeve: a loose cuff behind the hand */}
+          <mesh material={gown} position={[2.5, 1.5, -2.5]}>
+            <sphereGeometry args={[6.6, 16, 12]} />
+          </mesh>
         </mesh>
         <mesh ref={armR} material={stoneDark} position={[19, 20, 0]}>
           <sphereGeometry args={[5.5, 16, 12]} />
+          <mesh material={gown} position={[-2.5, 1.5, -2.5]}>
+            <sphereGeometry args={[6.6, 16, 12]} />
+          </mesh>
+        </mesh>
+        {/* hood: round the neck, two bands down the front, the fold at the back */}
+        <mesh material={hood} position={[0, 31, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[11.5, 2.4, 10, 28]} />
+        </mesh>
+        <mesh material={hood} position={[-6, 24, 13.6]} rotation={[0, 0, 0.42]}>
+          <boxGeometry args={[4, 16, 1.6]} />
+        </mesh>
+        <mesh material={hood} position={[6, 24, 13.6]} rotation={[0, 0, -0.42]}>
+          <boxGeometry args={[4, 16, 1.6]} />
+        </mesh>
+        <mesh material={hood} position={[0, 24, -15.5]}>
+          <boxGeometry args={[24, 18, 2.4]} />
         </mesh>
         <group ref={head} position={[0, 44, 0]}>
           <mesh material={stone}>
             <sphereGeometry args={[17, 28, 22]} />
           </mesh>
-          <mesh material={moss} position={[-5, 14, 4]}>
-            <sphereGeometry args={[4.2, 12, 10]} />
-          </mesh>
-          <mesh material={moss} position={[3, 15.5, 1]}>
+          {/* mortarboard: skullcap, board set a little askew, button, tassel */}
+          <group rotation={[0.05, 0, 0.07]}>
+            <mesh material={ink} position={[0, 11, 0]}>
+              <cylinderGeometry args={[13, 15.5, 6, 28]} />
+            </mesh>
+            <mesh material={ink} position={[0, 14.9, 0]}>
+              <boxGeometry args={[36, 1.8, 36]} />
+            </mesh>
+            <mesh material={ink} position={[0, 16.4, 0]}>
+              <cylinderGeometry args={[1.8, 1.8, 1.4, 12]} />
+            </mesh>
+            {/* cord lies across the board to the right-front corner, then hangs */}
+            <mesh material={hood} position={[8.5, 16, 8.5]} rotation={[0, -Math.PI / 4, Math.PI / 2]}>
+              <cylinderGeometry args={[0.5, 0.5, 24, 6]} />
+            </mesh>
+            <group ref={tassel} position={[17, 15.2, 17]}>
+              <mesh material={hood} position={[0, -5, 0]}>
+                <cylinderGeometry args={[0.5, 0.5, 10, 6]} />
+              </mesh>
+              <mesh material={hood} position={[0, -12.5, 0]}>
+                <cylinderGeometry args={[1.2, 2, 6, 10]} />
+              </mesh>
+            </group>
+          </group>
+          {/* one tuft of moss still shows under the cap */}
+          <mesh material={moss} position={[-13.5, 7.5, 5]}>
             <sphereGeometry args={[3.2, 12, 10]} />
-          </mesh>
-          <mesh material={moss} position={[8, 11, 6]}>
-            <sphereGeometry args={[2.4, 10, 8]} />
           </mesh>
           <group ref={eyeL} position={[-7, 3, 14]}>
             <mesh material={eyeWhite}>

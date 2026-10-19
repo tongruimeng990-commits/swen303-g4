@@ -8,6 +8,12 @@ import { useActiveVideo } from './useActiveVideo'
 import { useDesk, type DeskObjectProps } from './useDesk'
 import { usePins } from '../lib/pins'
 import { Shortlist } from '../shortlist/Shortlist'
+import { ClubConversation } from './ClubConversation'
+import { JoinForm } from './JoinForm'
+import { FirstTimeNote } from './FirstTimeNote'
+import { Dock, openWindow, type DockItem } from './Dock'
+import { Trinket, deskTrinkets } from './trinkets'
+import { Colophon } from '../Colophon'
 
 type Opened =
   | { kind: 'photo'; index: number }
@@ -16,7 +22,7 @@ type Opened =
   | null
 
 const navigation = [
-  { label: 'what’s on', href: '#this-week' },
+  { label: 'what’s on', href: '#coming-up' },
   { label: 'watch', href: '#watch' },
   { label: 'first time?', href: '#first-time' },
   { label: 'say hi', href: '#say-hi' },
@@ -24,6 +30,7 @@ const navigation = [
 
 export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
   const [opened, setOpened] = useState<Opened>(null)
+  const [joinSent, setJoinSent] = useState(false)
   const close = useCallback(() => setOpened(null), [])
   const videoFocus = useActiveVideo()
   const pins = usePins()
@@ -33,6 +40,15 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
 
   const heroPhotos = club.photos.slice(0, 3)
   const heroVideos = club.videos.slice(0, 2)
+
+  const dockItems: DockItem[] = [
+    { id: 'this-week', file: 'this-week.txt', hint: 'a note from the club', kind: 'txt' },
+    { id: 'first-time', file: 'first-time.note', hint: 'before your first visit', kind: 'note' },
+    { id: 'watch', file: club.watch.file, hint: 'what a session looks like', kind: 'mov' },
+    { id: 'members', file: 'in-their-words.chat', hint: 'members on why they go', kind: 'chat' },
+    { id: 'coming-up', file: 'coming-up.ics', hint: 'when they meet', kind: 'ics' },
+    { id: 'say-hi', file: joinSent ? 'sent.mail' : 'say-hi.mail', hint: 'sign up, or ask first', kind: 'mail' },
+  ]
 
   const videoWindow = (
     scope: 'hero' | 'grid',
@@ -88,7 +104,7 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
             aria-label={`Open ${club.name} group photo`}
           >
             <span className="name-sticker__head">
-              <b>hello</b>
+              <b>kia ora</b>
               <small>my name is</small>
             </span>
             <span className="name-sticker__name">{club.name}</span>
@@ -141,10 +157,23 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
             {...desk.objectProps('folder', { style: { '--slot': 8 } as CSSProperties })}
             onOpen={() => setOpened({ kind: 'gallery' })}
           />
+
+          {(deskTrinkets[club.slug] ?? []).map((spec, index) => (
+            <Trinket
+              key={spec.kind === 'art' ? spec.id : `text:${index}`}
+              spec={spec}
+              slot={9 + index}
+              desk={desk.objectProps(`trinket:${spec.kind === 'art' ? spec.id : index}`)}
+            />
+          ))}
         </div>
 
         <div className="desk-hero__copy">
-          <h1 id="club-title" className="desk-hero__title">{club.hello}</h1>
+          <h1 id="club-title" className="desk-hero__title">{club.name}</h1>
+          <ul className="desk-tags" aria-label="Club interests">
+            {club.tags.slice(0, 3).map((tag) => <li key={tag}>{tag}</li>)}
+          </ul>
+          <p className="desk-hero__subtitle">{club.intro}</p>
           <p className="desk-meets">
             <span className="desk-meets__line">{club.meets.line}</span>
             <span className="desk-meets__dot" aria-hidden="true">·</span>
@@ -152,8 +181,8 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
           </p>
           <p className="desk-meets__caveat">{club.meets.caveat}</p>
           <div className="desk-hero__actions">
-            <a className="desk-button desk-button--primary" href="#this-week">what’s on this week</a>
-            <a className="desk-button" href="#say-hi">say hi</a>
+            <a className="desk-button desk-button--primary" href="#say-hi">come along →</a>
+            <a className="desk-button" href="#coming-up">what’s on this week</a>
             <button
               type="button"
               className="desk-button desk-button--pin"
@@ -178,29 +207,27 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
       </section>
 
       <div className="desk-windows">
-        <MacWindow id="this-week" title="this-week.txt" className="desk-window--mail">
+        <MacWindow id="this-week" title="this-week.txt" subtitle="a note from the club" className="desk-window--mail">
           <p className="mail-subject">
             <span>subject</span>
-            {club.thisWeek.subject}
+            {club.letter.subject}
           </p>
-          {club.thisWeek.lines.map((line, index) => (
-            <p key={index}>{line}</p>
-          ))}
+          <p>{club.letter.greeting}</p>
+          <p>{club.letter.body}</p>
+          <p>{club.letter.signoff}</p>
           <p className="mail-footer">
-            <span>where</span>
-            {club.meets.room}. {club.meets.directions}
+            <span>reply</span>
+            <button type="button" className="mail-reply" onClick={() => openWindow('say-hi')}>
+              open say-hi.mail →
+            </button>
           </p>
         </MacWindow>
 
-        <MacWindow id="first-time" title="first-time.note" className="desk-window--note">
-          <ul className="note-list">
-            {club.firstTime.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+        <MacWindow id="first-time" title="first-time.note" subtitle="before your first visit" className="desk-window--note">
+          <FirstTimeNote club={club} />
         </MacWindow>
 
-        <MacWindow id="watch" title={club.watch.file} className="desk-window--videos">
+        <MacWindow id="watch" title={club.watch.file} subtitle="what a session looks like" className="desk-window--videos">
           <p className="desk-lead">{club.watch.lead}</p>
           <div className="video-desk">
             {club.videos.map((video) => videoWindow('grid', video))}
@@ -208,32 +235,15 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
         </MacWindow>
 
 
-        <MacWindow id="members" title={club.quotesFile} className="desk-window--wall">
-          <div className="quote-wall">
-            {club.quotes.map((quote, index) => (
-              <blockquote key={index} className="quote-card" style={{ '--n': index } as CSSProperties}>
-                <p>“{quote.text}”</p>
-                <footer>{quote.by}</footer>
-              </blockquote>
-            ))}
-          </div>
-        </MacWindow>
+        <ClubConversation club={club} />
 
-        <MacWindow id="coming-up" title="coming-up.ics" className="desk-window--events">
-          <ol className="event-list">
-            {club.comingUp.map((event) => (
-              <li key={event.name}>
-                <span className="event-list__when">{event.when}</span>
-                <span className="event-list__name">{event.name}</span>
-                {event.where ? <span className="event-list__where">{event.where}</span> : null}
-                {event.note ? <span className="event-list__note">{event.note}</span> : null}
-              </li>
-            ))}
-          </ol>
-          <p className="desk-fine">{club.comingUpNote}</p>
-        </MacWindow>
-
-        <MacWindow id="say-hi" title="say-hi.mail" className="desk-window--contact">
+        <MacWindow
+          id="say-hi"
+          title={joinSent ? 'sent.mail' : 'say-hi.mail'}
+          subtitle={joinSent ? 'done' : 'sign up, or ask first'}
+          className="desk-window--contact"
+        >
+          <JoinForm club={club} onSent={() => setJoinSent(true)} />
           <ul className="contact-list">
             <li>
               <span>email</span>
@@ -269,10 +279,14 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
       </div>
 
       <footer className="desk-footer">
-        <a href="/">← back to all clubs</a>
-        <span>photos and videos belong to {club.name} and the people credited.</span>
+        <div className="desk-footer__row">
+          <a href="/">← back to all clubs</a>
+          <span>photos and videos belong to {club.name} and the people credited.</span>
+        </div>
+        <Colophon />
       </footer>
 
+      <Dock items={dockItems} />
       <Shortlist tone="light" />
 
       {opened?.kind === 'photo' ? (

@@ -139,38 +139,53 @@ export const vicfolkDesktop: ClubDesktopContent = {
   slug: 'vicfolk',
   name: 'VicFolk',
   fullName: vicfolk.fullName,
-  hello:
-    'hello, we’re vicfolk. irish & scottish tunes, dances and songs, every week on campus. no experience needed, bring your two left feet.',
+  tags: ["folk music", "dancing", "singing"],
+  intro: "irish and scottish tunes, dances and songs for everyone.",
+  letter: {
+    "subject": "a note from vicfolk",
+    "greeting": "kia ora all,",
+    "body": "we walk through ceilidh dances from scratch, then learn tunes together. if you don’t play an instrument, come and dance or sing.",
+    "signoff": "the vicfolk committee"
+  },
+  costs: [
+    {
+      "label": "Ceilidh · student ticket",
+      "price": "Usually $10"
+    },
+    {
+      "label": "Ceilidh · general ticket",
+      "price": "Usually $15"
+    }
+  ],
+  bring: {
+    "yes": [
+      "An instrument, if you have one."
+    ],
+    "no": []
+  },
+  essentials: [
+    'no experience needed. every dance is taught and walked through before the music starts.',
+    'doors 6pm, session from 6:10pm. su217/218 is upstairs from mauri ora, past the vending machines.',
+    'can’t play anything? dance or sing. all ages, students and alumni.',
+  ],
+  goodToKnow: [
+    "you don’t need any experience. none.",
+    "every dance is taught and walked through before the music starts.",
+    "all ages, students and alumni, and anyone else who’s keen.",
+    "can’t play anything? dance or sing. we teach tunes from the ground up.",
+    "ceilidh is pronounced “kay-lee”.",
+    "For the regular session, doors open at 6pm and the session starts at 6:10pm."
+  ],
   meets: {
     line: 'thursdays 6–8pm',
     room: 'Student Union SU217/218',
     caveat: 'last checked oct 2026 · double-check this week’s email',
     directions: vicfolk.weeklyMeetup.directions,
   },
-  thisWeek: {
-    subject: 'this week at vicfolk: dancing + a new reel',
-    lines: [
-      'kia ora all,',
-      'this thursday we’re dancing. we’ll walk through two ceilidh dances from scratch, then learn a reel for the band.',
-      'room: SU217/218, student union. doors from 6pm, we start at 6:10.',
-      'bring an instrument if you have one. if you don’t, come and dance or sing.',
-      'see you there,',
-      'the vicfolk committee',
-    ],
-  },
-  firstTime: [
-    'you don’t need any experience. none.',
-    'every dance is taught and walked through before the music starts.',
-    'all ages, students and alumni, and anyone else who’s keen.',
-    'can’t play anything? dance or sing. we teach tunes from the ground up.',
-    'ceilidh is pronounced “kay-lee”.',
-    'ceilidh tickets are usually $10 for students, $15 general.',
-  ],
   watch: {
     file: 'watch-a-ceilidh.mov',
     lead: 'this is what a night actually looks like. everyone in these clips was taught the dance about five minutes earlier.',
   },
-  quotesFile: 'what-members-say',
   quotes: [
     {
       text: 'They teach each dance before we do it together. People from young children to much older adults can do this kind of dancing, and you are not expected to be good already.',
@@ -193,7 +208,8 @@ export const vicfolkDesktop: ClubDesktopContent = {
       by: 'a vicfolk member (from our interviews)',
     },
   ],
-  comingUp: [
+  events: [
+    { name: 'Weekly session', when: 'thursdays 6–8pm during teaching weeks', time: '6–8pm', weekday: 4, where: 'SU217/218, Student Union' },
     { name: 'End of Year Ceilidh', when: 'late november', where: 'Northland Memorial Community Centre' },
     { name: 'St Patrick’s Day Ceilidh', when: 'march' },
     { name: 'Ceol Aneas Ceilidh', when: 'early june', where: 'Trafalgar Hall, Nelson' },

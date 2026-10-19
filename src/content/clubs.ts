@@ -27,6 +27,17 @@ export interface ClubSummary {
    * published one (then `weekday` is only a sort placeholder).
    */
   slot?: ClubSlot
+  /**
+   * The regular session's clock times, 24h "HH:MM", for the week view in
+   * my clubs. `end` is left out when the club has not published one; the
+   * view then draws an hour and says so. Day comes from `weekday`.
+   */
+  session?: { start: string; end?: string }
+  /**
+   * Other things people call the club, lower case: the full name, the
+   * activity, nicknames. Search and the golem both match on these.
+   */
+  aliases: string[]
   /** "#clubs" when the club has no page of its own yet */
   href: string
   poster: ClubPoster
@@ -45,6 +56,8 @@ export const clubsByTone: ClubSummary[] = [
     next: 'Thu 6pm · SU217',
     weekday: 4,
     slot: 'evening',
+    session: { start: '18:00', end: '20:00' },
+    aliases: ['vic folk', 'folk', 'folk music', 'folk music club', 'ceilidh', 'dance', 'dancing', 'fiddle'],
     href: '/editorial/vicfolk',
     poster: { src: '/clubs/vicfolk/poster-midwinter-ceilidh-2026.webp', width: 260, height: 130, fit: 'cover' },
     when: 'thursdays 6–8pm',
@@ -59,6 +72,8 @@ export const clubsByTone: ClubSummary[] = [
     next: 'Tue 6pm · Kelburn',
     weekday: 2,
     slot: 'evening',
+    session: { start: '18:00' },
+    aliases: ['tramping', 'tramping club', 'tramp', 'hiking', 'climbing', 'climb', 'outdoors', 'taco'],
     href: '/editorial/vuwtc',
     poster: { src: '/clubs/vuwtc/poster-bushball-2019.jpg', width: 260, height: 146, fit: 'cover' },
     when: 'tuesdays 6pm',
@@ -73,6 +88,8 @@ export const clubsByTone: ClubSummary[] = [
     next: 'Thu 7:45pm · Freyberg Pool',
     weekday: 4,
     slot: 'evening',
+    session: { start: '19:45' },
+    aliases: ['canoe', 'canoe club', 'kayak', 'kayaking', 'white-water', 'whitewater', 'paddle', 'river'],
     href: '/editorial/vucc',
     poster: { src: '/clubs/vucc/40th-mangahao.jpg', width: 260, height: 146, fit: 'cover' },
     when: 'thursdays 7:45pm',
@@ -87,6 +104,8 @@ export const clubsByTone: ClubSummary[] = [
     next: 'Wed 6:30pm · KK301',
     weekday: 3,
     slot: 'evening',
+    session: { start: '18:30' },
+    aliases: ['debsoc', 'debate', 'debating', 'debating society', 'debate society', 'public speaking'],
     href: '/editorial/debsoc',
     poster: { src: '/clubs/debsoc/team-photo.jpg', width: 260, height: 146, fit: 'cover' },
     when: 'wednesdays 6:30pm',
@@ -100,6 +119,7 @@ export const clubsByTone: ClubSummary[] = [
     blurb: 'japanese drumming, loud and beginner-friendly',
     next: 'weekly · time tbc',
     weekday: 7,
+    aliases: ['taiko', 'mukume', 'drum', 'drums', 'drumming', 'japanese drumming'],
     href: '/editorial/mukume-taiko',
     poster: { src: '/clubs/taiko/poster-heartbeat-2024.jpg', width: 260, height: 130, fit: 'cover' },
     when: 'weekly practice, time not published',
@@ -113,6 +133,7 @@ export const clubsByTone: ClubSummary[] = [
     blurb: 'ukulele for every level, songs together',
     next: 'weekly · time tbc',
     weekday: 7,
+    aliases: ['vic uke', 'uke', 'ukulele', 'ukulele club', 'music', 'singing'],
     href: '/editorial/vicuke',
     poster: { src: '/clubs/vicuke/poster-promo.jpg', width: 260, height: 146, fit: 'cover' },
     when: 'weekly, time not published',
@@ -154,15 +175,33 @@ export const filterIsActive = (filter: ClubFilter) =>
 export const filterHasTime = (filter: ClubFilter) => filter.days.length > 0 || filter.slots.length > 0
 
 /**
+ * The alias that made a club match a search when its name did not, so the
+ * row can say "also: debating society". Null when the name or blurb matched
+ * or the query is empty.
+ */
+export function aliasHit(club: ClubSummary, query: string): string | null {
+  const q = query.trim().toLowerCase()
+  if (!q) return null
+  if (`${club.name} ${club.blurb}`.toLowerCase().includes(q)) return null
+  return club.aliases.find((alias) => alias.includes(q) || q.includes(alias)) ?? null
+}
+
+/** True when the query matches the name, blurb or any alias. */
+export const matchesQuery = (club: ClubSummary, query: string) => {
+  const q = query.trim().toLowerCase()
+  if (!q) return true
+  return `${club.name} ${club.blurb}`.toLowerCase().includes(q) || aliasHit(club, q) !== null
+}
+
+/**
  * Split clubs into the ones that match the filter and the ones that cannot
- * be judged because they have not published a time. Name/blurb search hides
- * non-matches outright; time filters only sink the unknowns.
+ * be judged because they have not published a time. Text search (name,
+ * blurb, aliases) hides non-matches outright; time filters only sink the
+ * unknowns.
  */
 export function applyClubFilter<T extends { club: ClubSummary }>(items: T[], filter: ClubFilter) {
   const query = filter.query.trim().toLowerCase()
-  const byText = query
-    ? items.filter(({ club }) => `${club.name} ${club.blurb}`.toLowerCase().includes(query))
-    : items
+  const byText = query ? items.filter(({ club }) => matchesQuery(club, query)) : items
   if (!filterHasTime(filter)) return { matched: byText, unplaced: [] as T[] }
   const matched: T[] = []
   const unplaced: T[] = []

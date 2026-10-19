@@ -1,4 +1,8 @@
 :root {
+  /* Te Herenga Waka — Victoria University of Wellington green, and a lighter
+     one that still reads as text on paper. */
+  --vuw-green: #004b34;
+  --vuw-green-ink: #1b7d52;
   color: #fff;
   background: #08070b;
   font-family: Inter, "Helvetica Neue", Arial, sans-serif;
@@ -39,6 +43,49 @@ a {
   outline: 2px solid #a889ff;
   outline-offset: 4px;
   border-radius: 2px;
+}
+
+/* Colophon: the Hunter Building and the university's name, at the foot of
+   every page (src/Colophon.tsx). Inherits the page's ink. */
+
+.colophon {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  margin: 56px auto 0;
+  padding-top: 28px;
+  max-width: 560px;
+  border-top: 1px solid currentColor;
+  color: inherit;
+  text-align: center;
+  --colophon-line: rgba(20, 20, 20, 0.12);
+  border-color: var(--colophon-line);
+}
+
+.colophon__art {
+  display: block;
+  width: 176px;
+  height: auto;
+  color: var(--vuw-green-ink);
+  opacity: 0.9;
+}
+
+.colophon__text {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  opacity: 0.72;
+}
+
+.colophon__uni {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vuw-green-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -29,8 +29,8 @@ export interface GuideContext {
 
 export const SUGGESTED_QUESTIONS = [
   'what’s on thursday?',
-  'which clubs want no experience?',
-  'how does the pile work?',
+  'which clubs are beginner-friendly?',
+  'how do I save a club?',
   'when does VicFolk meet?',
 ]
 
@@ -49,14 +49,8 @@ export const hoverPrompts = (club: ClubSummary): Array<{ label: string; question
     : { label: 'what’s on this week?', question: 'what’s on this week?' },
 ]
 
-const ALIASES: Record<string, string[]> = {
-  vicfolk: ['vicfolk', 'vic folk', 'folk', 'ceilidh'],
-  vuwtc: ['vuwtc', 'tramping', 'tramp', 'climbing', 'climb', 'taco'],
-  vucc: ['vucc', 'kayak', 'canoe', 'white-water', 'whitewater', 'paddle'],
-  debsoc: ['debsoc', 'debating', 'debate', 'debsoc'],
-  'mukume-taiko': ['taiko', 'mukume', 'drum'],
-  vicuke: ['vicuke', 'vic uke', 'uke', 'ukulele'],
-}
+/** Aliases too generic to identify a club from a sentence ("music", "dance"). */
+const VAGUE = new Set(['music', 'dance', 'dancing', 'singing', 'river', 'outdoors'])
 
 const has = (text: string, words: string[]) => words.some((w) => text.includes(w))
 
@@ -71,7 +65,7 @@ function dayFromText(text: string, today: number): number | null {
 
 function clubFromText(text: string, clubs: ClubSummary[]): ClubSummary | null {
   for (const club of clubs) {
-    const names = [club.name.toLowerCase(), ...(ALIASES[club.slug] ?? [])]
+    const names = [club.name.toLowerCase(), club.slug, ...club.aliases.filter((alias) => !VAGUE.has(alias))]
     if (names.some((n) => text.includes(n))) return club
   }
   return null
@@ -83,7 +77,7 @@ const list = (items: string[]) =>
 const clubActions = (club: ClubSummary, shortlist: string[]): GuideAction[] => {
   const actions: GuideAction[] = []
   if (hasOwnPage(club)) actions.push({ label: `open ${club.name}’s page`, kind: 'open-page', arg: club.slug })
-  if (!shortlist.includes(club.slug)) actions.push({ label: `catch ${club.name}`, kind: 'catch', arg: club.slug })
+  if (!shortlist.includes(club.slug)) actions.push({ label: `save ${club.name}`, kind: 'catch', arg: club.slug })
   return actions
 }
 
@@ -94,7 +88,7 @@ function describeClub(club: ClubSummary, shortlist: string[]): Reply {
   else parts.push(`they haven’t published a regular time here${club.where ? ` — ${club.where}` : ''}.`)
   if (club.signals?.length) parts.push(`worth knowing: ${list(club.signals)}.`)
   if (club.contact?.length) parts.push(`you can reach them by ${list(club.contact)} — links are on their page.`)
-  if (shortlist.includes(club.slug)) parts.push('it’s already in your pile.')
+  if (shortlist.includes(club.slug)) parts.push('it’s already in your saved clubs.')
   return { text: parts.join(' '), actions: clubActions(club, shortlist) }
 }
 
@@ -118,14 +112,14 @@ function describeDay(day: number, ctx: GuideContext): Reply {
 
 export function answer(question: string, ctx: GuideContext): Reply {
   const text = question.trim().toLowerCase().replace(/[’']/g, '’')
-  if (!text) return { text: 'ask me about a club, a day of the week, or how the pile works.' }
+  if (!text) return { text: 'ask me about a club, a day of the week, or how saving a club works.' }
 
   const club = clubFromText(text, ctx.clubs)
   const day = dayFromText(text, ctx.today)
 
-  if (/\b(hi|hey|hello)\b|who are you|what are you|your name|are you a/.test(text)) {
+  if (/\b(hi|hey|hello|kia ora|tēnā koe|tena koe)\b|who are you|what are you|your name|are you a/.test(text)) {
     return {
-      text: 'a small stone that lives on this page. I only know what the clubs have put here, and I’m good at kicking posters into your pile.',
+      text: 'kia ora. a small stone that lives on this page — graduated a while back, kept the gown. I only know what the clubs have put here, and I’m good at kicking posters over to your saved clubs.',
     }
   }
 
@@ -138,11 +132,11 @@ export function answer(question: string, ctx: GuideContext): Reply {
     }
   }
 
-  if (has(text, ['pile', 'catch', 'caught', 'save', 'later', 'shortlist', 'bookmark'])) {
+  if (has(text, ['pile', 'catch', 'caught', 'save', 'saved', 'my clubs', 'later', 'shortlist', 'bookmark', 'compare'])) {
     return {
       text:
-        'click a row to catch it — the poster lands in the pile in the corner (I’ll see to that). open the pile to read them side by side, and click a caught row again to let it go.',
-      actions: ctx.shortlist.length ? [{ label: 'open the pile', kind: 'open-pile' }] : undefined,
+        'click a row to save it — the poster lands in “my clubs” in the corner (I’ll see to that). open my clubs to read them side by side, and click a saved row again to remove it.',
+      actions: ctx.shortlist.length ? [{ label: 'open my clubs', kind: 'open-pile' }] : undefined,
     }
   }
 
@@ -165,7 +159,7 @@ export function answer(question: string, ctx: GuideContext): Reply {
   if (club && has(text, ['join', 'contact', 'reach', 'sign up', 'signup', 'get in touch', 'email', 'instagram', 'facebook', 'discord', 'message'])) {
     return {
       text: club.contact?.length
-        ? `${club.name} is reachable by ${list(club.contact)} — the links are on their page. no sign-up form here; just turn up or message them.`
+        ? `there’s a sign-up form and an ask-a-question box at the bottom of ${club.name}’s page (say hi). you can also reach them by ${list(club.contact)}, or just turn up.`
         : `${club.name} hasn’t published a contact here${hasOwnPage(club) ? ' — their page may say more' : ''}.`,
       actions: clubActions(club, ctx.shortlist),
     }

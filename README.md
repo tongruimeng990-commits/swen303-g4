@@ -2,7 +2,7 @@
 
 ## Run it
 
-Requires Node.js 20+.
+Requires Node.js 22.18+ (including the built-in TypeScript support used by tests).
 
 ```sh
 npm install
@@ -19,4 +19,5 @@ Open http://localhost:5173/
 ```sh
 npm run build      # type-check + production build into dist/
 npm run preview    # serve the production build locally
+npm test           # calendar dates, email draft encoding, pile return geometry
 ```

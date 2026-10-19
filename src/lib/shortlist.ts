@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 const KEY = 'vuwclubs:shortlist'
 const EVENT = 'vuwclubs:shortlist-change'
+export const SHORTLIST_CATCH_EVENT = 'vuwclubs:shortlist-catch'
 
 export function readShortlist(): string[] {
   if (typeof window === 'undefined') return []
@@ -51,6 +52,7 @@ export function useShortlist() {
     const next = [...current, slug]
     writeShortlist(next)
     setItems(next)
+    window.dispatchEvent(new Event(SHORTLIST_CATCH_EVENT))
   }, [])
 
   const remove = useCallback((slug: string) => {
@@ -76,8 +78,8 @@ export const PILE_ID = 'shortlist-pile'
 /** Where a caught poster should fly to: the pile, or the corner it will appear in. */
 export function pileTargetRect(): DOMRect {
   const pile = document.getElementById(PILE_ID)
-  if (pile) return pile.getBoundingClientRect()
-  const size = 72
+  if (pile) return (pile.querySelector('.shortlist-pile__stack') ?? pile).getBoundingClientRect()
+  const size = 112
   return new DOMRect(window.innerWidth - 24 - size, window.innerHeight - 24 - size, size, size)
 }
 

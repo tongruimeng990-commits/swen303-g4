@@ -1,0 +1,479 @@
+/* ---------------------------------------------------------------------------
+   The first screen is an old television. The club photo plays on it, the
+   poster trail runs across it, and the title sits top-left like a channel
+   ident. Everything here is CSS: scanlines, glass, bezel, the set switching
+   on. No runtime dependency; the trail layer (.ghost-layer, z 3) is untouched.
+
+   Depth: --px / --py (-1…1) are written by EditorialPage from the pointer.
+   The photo drifts against them and the title tilts, so the posters the
+   trail throws read as sitting in front of a lit room.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --tv-cream: #f3e9c6;
+  --tv-green: #0f4a36;
+  /* the same green, lifted enough to read as a line on the dark room */
+  --tv-green-ink: #2f9a6c;
+  --tv-green-deep: #002a1e;
+  --tv-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.black-field {
+  --px: 0;
+  --py: 0;
+  background: #050505;
+}
+
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The source has white edges; the scale crops them out and leaves room to drift. */
+  transform: scale(1.2) translate3d(calc(var(--px) * -10px), calc(var(--py) * -8px), 0);
+  transition: transform 900ms var(--tv-ease);
+  pointer-events: none;
+}
+
+.black-field::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: '';
+  background: rgb(0 0 0 / 66%);
+  pointer-events: none;
+}
+
+/* ---- Title: a diagonal across the screen, tilts with the pointer -------- */
+
+/* The heading is a full-screen layer. The pieces sit on a short diagonal
+   through the middle: the lead (find your / VUW) above-left of the search
+   box, "club." below-right of it. Both are anchored to the screen's centre
+   line, where the search box is, so the three stay together whatever the
+   screen's height. Sizes hang off --vuw. */
+.hero-heading {
+  --vuw: clamp(96px, 10.5vw, 150px);
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  perspective: 1100px;
+  opacity: calc(1 - var(--reveal) * 0.9);
+  translate: 0 calc(var(--reveal) * -6vh);
+  scale: calc(1 - var(--reveal) * 0.06);
+  pointer-events: none;
+}
+
+.hero-title {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  color: #fff;
+  font-family: "Avenir Next", Avenir, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--py) * -3deg)) rotateY(calc(var(--px) * 4deg));
+  transition: transform 700ms var(--tv-ease);
+}
+
+/* 1. The lead: "find / share your" over VUW over the university's name,
+   sitting just above and left of the search box. */
+.hero-title__lead {
+  position: absolute;
+  left: 13%;
+  bottom: calc(46% + 92px);
+  display: block;
+  transform: translateZ(18px);
+}
+
+.hero-title__intro {
+  display: flex;
+  margin: 0 0 0.2em 0.1em;
+  align-items: baseline;
+  gap: 0.28em;
+  font-size: clamp(22px, 2.3vw, 34px);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 2px 14px rgb(0 0 0 / 60%);
+}
+
+.hero-word {
+  display: inline-block;
+  width: 2.75em;
+  height: 1.2em;
+  overflow: hidden;
+  color: var(--tv-cream);
+  text-shadow:
+    -1px 0 rgb(255 70 70 / 35%),
+    1px 0 rgb(80 210 255 / 35%),
+    0 2px 14px rgb(0 0 0 / 60%);
+}
+
+.hero-word__track {
+  display: block;
+  animation: hero-word-roll 8s ease-in-out infinite;
+}
+
+.hero-word__track > span {
+  display: block;
+  height: 1.2em;
+  line-height: 1.2;
+  padding-inline: 0.06em;
+}
+
+.hero-word[data-paused] .hero-word__track {
+  animation-play-state: paused;
+}
+
+@keyframes hero-word-roll {
+  0%, 40% { transform: translateY(0); }
+  50%, 90% { transform: translateY(-33.333333%); }
+  100% { transform: translateY(-66.666667%); }
+}
+
+/* Cream letters; the green is a second copy of the word, outline only,
+   printed a touch down and to the right like a misregistered plate. */
+.hero-title__vuw {
+  position: relative;
+  display: block;
+  font-size: var(--vuw);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 0.88;
+  color: var(--tv-cream);
+  text-shadow: 0 6px 30px rgb(0 0 0 / 55%);
+}
+
+.hero-title__vuw::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: attr(data-text);
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--tv-green-ink);
+  text-shadow: none;
+  translate: 0.055em 0.06em;
+}
+
+.hero-title__vuw::after {
+  position: absolute;
+  inset: 0;
+  content: attr(data-text);
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(0 0 0 / 35%);
+  text-shadow: none;
+  pointer-events: none;
+}
+
+.hero-title__uni {
+  display: block;
+  margin: calc(var(--vuw) * 0.1) 0 0 calc(var(--vuw) * 0.06);
+  font-size: clamp(10px, 0.78vw, 12px);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(255 255 255 / 70%);
+  text-shadow: 0 1px 8px rgb(0 0 0 / 60%);
+}
+
+/* 2. "club.": under the right end of the search box, leaning the other way
+   to the tilt. The right edge tracks the search box's (640px wide, centred). */
+.hero-title__club {
+  position: absolute;
+  right: max(24px, calc(50% - 340px));
+  top: calc(54% + 92px);
+  font-size: clamp(40px, 4.6vw, 68px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: #fff;
+  text-shadow: 0 2px 16px rgb(0 0 0 / 60%);
+  rotate: -4deg;
+  transform: translateZ(10px);
+}
+
+.hero-motion-toggle {
+  position: absolute;
+  z-index: 4;
+  left: 5%;
+  bottom: 28px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 999px;
+  color: rgb(255 255 255 / 80%);
+  background: rgb(0 0 0 / 35%);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  opacity: calc(1 - var(--reveal) * 0.9);
+}
+
+.hero-motion-toggle:hover {
+  color: #fff;
+  background: rgb(0 0 0 / 65%);
+}
+
+/* ---- Search: the centre of the screen, round ---------------------------- */
+
+/* For screen readers only (the search field's label). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero-search {
+  position: absolute;
+  z-index: 4;
+  top: var(--hero-search-top, 50%);
+  left: 50%;
+  width: min(640px, calc(100% - 48px));
+  margin: 0;
+  transform: translateX(-50%);
+  opacity: 0;
+  translate: 0 calc(var(--reveal) * -6vh);
+}
+
+.hero-search[data-ready] {
+  opacity: calc(1 - var(--reveal) * 0.9);
+  transition: opacity 240ms ease;
+}
+
+.hero-search__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 8px 0 0;
+  border: 1px solid rgb(255 255 255 / 38%);
+  border-radius: 999px;
+  background: rgb(8 8 8 / 55%);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 18%),
+    0 24px 60px -24px rgb(0 0 0 / 80%);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 200ms ease;
+}
+
+.hero-search__field:hover {
+  border-color: rgb(255 255 255 / 60%);
+}
+
+.hero-search__field:focus-within {
+  border-color: var(--tv-cream);
+  background: rgb(8 8 8 / 72%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 18%),
+    0 0 0 5px rgb(243 233 198 / 16%),
+    0 24px 60px -24px rgb(0 0 0 / 80%);
+}
+
+.hero-search__glass {
+  position: absolute;
+  left: 24px;
+  width: 17px;
+  height: 17px;
+  color: rgb(255 255 255 / 70%);
+  pointer-events: none;
+}
+
+.hero-search__field input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0 12px 0 54px;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.hero-search__field input::placeholder {
+  color: rgb(255 255 255 / 55%);
+}
+
+.hero-search__field input::-webkit-search-cancel-button {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.hero-search__go {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: #111;
+  background: var(--tv-cream);
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 180ms var(--tv-ease), background 160ms ease;
+}
+
+.hero-search__go:hover,
+.hero-search__go:focus-visible {
+  background: #fff;
+  transform: scale(1.06);
+}
+
+.hero-search__hint {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: rgb(255 255 255 / 70%);
+}
+
+.hero-search__hint button {
+  padding: 2px 0;
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgb(255 255 255 / 45%);
+}
+
+.hero-search__hint button:hover {
+  text-decoration-color: #fff;
+}
+
+/* ---- The glass ---------------------------------------------------------- */
+
+.crt {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.crt > span {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* Scanlines and the dark corners of a tube. */
+.crt__scan {
+  background:
+    radial-gradient(120% 95% at 50% 50%, transparent 58%, rgb(0 0 0 / 62%) 100%),
+    repeating-linear-gradient(to bottom, rgb(0 0 0 / 24%) 0 1px, transparent 1px 3px);
+  opacity: 0.6;
+  animation: crt-flicker 3.4s ease-in-out infinite;
+}
+
+@keyframes crt-flicker {
+  0%, 46%, 54%, 100% { opacity: 0.6; }
+  50% { opacity: 0.5; }
+}
+
+/* A window reflected in the glass, top-left. */
+.crt__glass {
+  background: linear-gradient(112deg, rgb(255 255 255 / 7%) 0%, rgb(255 255 255 / 2%) 26%, transparent 44%);
+}
+
+/* The bezel: rounded screen corners, filled outside with the page's dark,
+   and the curve of the tube as an inner shadow. */
+.crt__bezel {
+  inset: 12px;
+  border-radius: 30px;
+  box-shadow:
+    0 0 0 80px #08070b,
+    inset 0 0 0 1px rgb(255 255 255 / 7%),
+    inset 0 0 90px 14px rgb(0 0 0 / 60%);
+}
+
+/* Switching on: two black halves part from a bright line across the middle. */
+.crt__on {
+  background: #000;
+  animation: crt-on 640ms var(--tv-ease) 120ms both;
+}
+
+.crt__on--top {
+  bottom: 50%;
+  transform-origin: top;
+  box-shadow: 0 1px 22px 4px rgb(243 233 198 / 85%);
+}
+
+.crt__on--bottom {
+  top: 50%;
+  transform-origin: bottom;
+  box-shadow: 0 -1px 22px 4px rgb(243 233 198 / 85%);
+}
+
+@keyframes crt-on {
+  0% { transform: scaleY(1); }
+  70% { transform: scaleY(0.004); }
+  100% { transform: scaleY(0); visibility: hidden; }
+}
+
+/* ---- Scroll hint ---------------------------------------------------------- */
+
+.black-field .scroll-hint {
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  color: #fff;
+  font-size: 32px;
+}
+
+.black-field .scroll-hint::after {
+  content: none;
+}
+
+/* Short windows: the search already points down; drop the arrow under it. */
+@media (max-height: 740px) {
+  .black-field .scroll-hint { display: none; }
+}
+
+/* Mid widths: keep clear of the pile in the corner. */
+@media (max-width: 980px) {
+  .hero-search { width: min(480px, calc(100% - 48px)); }
+  .hero-title__lead { left: 8%; }
+}
+
+@media (max-width: 680px) {
+  .hero-heading { --vuw: clamp(84px, 24vw, 104px); }
+  .hero-title__lead { left: 20px; bottom: calc(46% + 84px); }
+  .hero-title__intro { font-size: clamp(20px, 5.6vw, 26px); }
+  .hero-title__vuw::before { -webkit-text-stroke-width: 1.2px; }
+  .hero-title__uni { font-size: 10px; letter-spacing: 0.12em; }
+  .hero-title__uni-long { display: none; }
+  .hero-title__club { right: 20px; top: calc(54% + 84px); font-size: clamp(32px, 9vw, 44px); }
+  .hero-search { width: calc(100% - 40px); }
+  .hero-search__field { height: 56px; }
+  .hero-search__field input { font-size: 16px; padding-left: 48px; }
+  .hero-search__glass { left: 20px; }
+  .hero-search__go { width: 42px; height: 42px; font-size: 20px; }
+  .hero-motion-toggle { left: 24px; bottom: 22px; }
+  .crt__bezel { inset: 8px; border-radius: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-word__track { animation: none; transform: none; }
+  .hero-motion-toggle { display: none; }
+  .hero-heading { translate: none; scale: none; }
+  .hero-photo { transform: scale(1.2); transition: none; }
+  .hero-title { transform: none; transition: none; }
+  .hero-search { translate: none; }
+  .hero-search[data-ready],
+  .hero-search__field,
+  .hero-search__go { transition: none; }
+  .crt__scan { animation: none; }
+  .crt__on { display: none; }
+}

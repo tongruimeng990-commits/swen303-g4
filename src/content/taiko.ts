@@ -14,8 +14,35 @@ export const taikoDesktop: ClubDesktopContent = {
   slug: 'mukume-taiko',
   name: 'Mukume Taiko',
   fullName: 'Mukume Taiko Drummers',
-  hello:
-    'hello, we’re mukume taiko. japanese drumming out of vuw since 1994. loud, beginner-friendly, and we play all over wellington and the kāpiti coast.',
+  tags: ["drumming", "beginner-friendly", "performance"],
+  intro: "japanese drumming from wellington and the kāpiti coast.",
+  letter: {
+    "subject": "a note from mukume taiko",
+    "greeting": "kia ora,",
+    "body": "japanese drumming out of vuw since 1994. beginner-friendly practices and performances around wellington and the kāpiti coast.",
+    "signoff": "mukume taiko"
+  },
+  costs: []
+,
+  bring: {
+    "yes": [
+      "Comfortable clothes."
+    ],
+    "no": []
+  },
+  essentials: [
+    'no experience needed. practices are beginner-friendly.',
+    'it’s loud. their own listing warns it may not suit people with noise sensitivity.',
+    'the practice time isn’t posted online: message them on instagram or email first.',
+  ],
+  goodToKnow: [
+    "no experience needed. practices are beginner-friendly.",
+    "it’s loud. their own workshop listing warns it may not suit people with noise sensitivity.",
+    "they play traditional and contemporary pieces taught by people from aotearoa and japan.",
+    "going since 1994. the 30th-anniversary concert, heartbeat, was in the memorial theatre in october 2024.",
+    "performances are around wellington and the kāpiti coast: markets, festivals, christmas events.",
+    "they ran a free pride fest drumming workshop with uniq in su229."
+  ],
   meets: {
     line: 'weekly practice, beginner-friendly',
     room: 'Kelburn campus · day & time not published',
@@ -23,29 +50,10 @@ export const taikoDesktop: ClubDesktopContent = {
     directions:
       'Their recent workshops and concerts were in the Student Union Building on Kelburn Parade (SU229 and the Memorial Theatre).',
   },
-  thisWeek: {
-    subject: 'this week at mukume taiko: come and try the drums',
-    lines: [
-      'kia ora,',
-      'practice is beginner-friendly: “no experience needed.” wear comfy clothes. it is loud.',
-      'the club doesn’t publish a weekly time online, so dm them on instagram (@mukumetaiko) or email for this week’s practice.',
-      'gigs come up around the region. recent ones were christmas at cedarwood, the paekākāriki christmas fête and a lunar new year show at viet hub.',
-      'mukume taiko',
-    ],
-  },
-  firstTime: [
-    'no experience needed. practices are beginner-friendly.',
-    'it’s loud. their own workshop listing warns it may not suit people with noise sensitivity.',
-    'they play traditional and contemporary pieces taught by people from aotearoa and japan.',
-    'going since 1994. the 30th-anniversary concert, heartbeat, was in the memorial theatre in october 2024.',
-    'performances are around wellington and the kāpiti coast: markets, festivals, christmas events.',
-    'they ran a free pride fest drumming workshop with uniq in su229.',
-  ],
   watch: {
     file: 'heartbeat.mov',
     lead: 'their own recordings from recent gigs — four pieces (utsu hachijo, nicho, gaina, humiko) — plus the kāpiti council’s festival clip.',
   },
-  quotesFile: 'in-their-words.txt',
   quotes: [
     {
       text: 'Energetic and vibrant, Taiko is an ancient form of Japanese drumming and a musical performing art.',
@@ -68,7 +76,7 @@ export const taikoDesktop: ClubDesktopContent = {
       by: 'loud and proud workshop, with uniq te herenga waka',
     },
   ],
-  comingUp: [
+  events: [
     { name: 'Pride Fest taiko workshop (with UniQ)', when: 'july', where: 'SU229, Kelburn' },
     { name: 'Christmas at Cedarwood', when: 'early december' },
     { name: 'Paekākāriki Christmas Fête', when: 'mid december', where: 'Paekākāriki' },

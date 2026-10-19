@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
+import { Colophon } from '../Colophon'
 import {
+  aliasHit,
   applyClubFilter,
   clubsByWeek,
   EMPTY_FILTER,
@@ -12,7 +14,8 @@ import {
 } from '../content/clubs'
 import { announceHover, CATCH_EVENT, FILTER_EVENT, useGolem } from '../golem/useGolem'
 import { pileTargetRect, useShortlist } from '../lib/shortlist'
-import { ClubFilters } from './ClubFilters'
+import { parseQuery, SEARCH_EVENT, type SearchRequest } from '../lib/search'
+import { CLUB_FILTERS_ID, ClubFilters } from './ClubFilters'
 
 interface Preview {
   slug: string
@@ -32,7 +35,7 @@ interface ClubListProps {
 }
 
 /**
- * The club list: scan top to bottom, click a row to catch it for later,
+ * The club list: scan top to bottom, click a row to save it for later,
  * open a name to read its page. Hovering a row floats its poster alongside.
  */
 export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {}) {
@@ -137,6 +140,26 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
     }
   }, [all, shortlist, catchClub])
 
+  // The hero search box: live typing just filters; Enter brings you down
+  // here and puts the caret in this bar's search, so you carry on in place.
+  useEffect(() => {
+    const onSearch = (event: Event) => {
+      const detail = (event as CustomEvent<SearchRequest>).detail
+      if (!detail) return
+      setFilter(parseQuery(detail.query))
+      if (!detail.commit) return
+      document.getElementById('clubs')?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      const input = document.querySelector<HTMLInputElement>(`#${CLUB_FILTERS_ID} input[type="search"]`)
+      if (input) {
+        input.focus({ preventScroll: true })
+        const end = input.value.length
+        input.setSelectionRange?.(end, end)
+      }
+    }
+    window.addEventListener(SEARCH_EVENT, onSearch)
+    return () => window.removeEventListener(SEARCH_EVENT, onSearch)
+  }, [])
+
   const onRowKeyDown = (event: KeyboardEvent<HTMLDivElement>, club: ClubSummary) => {
     if (event.target !== event.currentTarget) return
     if (event.key === 'Enter' || event.key === ' ') {
@@ -168,7 +191,7 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
         <p className="club-list__eyebrow">all clubs · {all.length}</p>
         <h2 id="club-list-title">find a club that fits your week</h2>
         <p className="club-list__lead">
-          click a row to catch it for later. they pile up in the corner; open the pile to read them side by side.
+          click a row to save it for later. saved clubs collect in the corner; open them to read side by side.
         </p>
       </header>
 
@@ -208,6 +231,7 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
         {rows.map(({ club }) => {
           const caught = shortlist.has(club.slug)
           const unknownTime = timeFilter && unplaced.some((item) => item.club.slug === club.slug)
+          const alias = aliasHit(club, filter.query)
           return (
             <li key={club.slug}>
               <div
@@ -215,7 +239,7 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
                 role="button"
                 tabIndex={0}
                 aria-pressed={caught}
-                aria-label={`${caught ? 'Remove' : 'Catch'} ${club.name} ${caught ? 'from' : 'for'} your pile`}
+                aria-label={`${caught ? 'Remove' : 'Save'} ${club.name} ${caught ? 'from' : 'to'} my clubs`}
                 data-slug={club.slug}
                 data-caught={caught || undefined}
                 data-unplaced={unknownTime || undefined}
@@ -252,11 +276,14 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
                       <small>page coming</small>
                     </span>
                   )}
-                  <span className="club-row__blurb">{club.blurb}</span>
+                  <span className="club-row__blurb">
+                    {club.blurb}
+                    {alias ? <small className="club-row__alias"> · also: {alias}</small> : null}
+                  </span>
                 </span>
                 <span className="club-row__when">{unknownTime ? 'time not published' : club.next}</span>
                 <span className="club-row__mark" aria-hidden="true">
-                  {caught ? 'in your pile' : 'catch'}
+                  {caught ? 'saved ✓' : 'save'}
                 </span>
               </div>
             </li>
@@ -271,6 +298,8 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
         style={previewStyle}
         aria-hidden="true"
       />
+
+      <Colophon>a swen303 student project · not an official university site</Colophon>
     </section>
   )
 }

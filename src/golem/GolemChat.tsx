@@ -109,7 +109,7 @@ export function GolemChat({ open, waiting, canFollow, onClose, onFollow, onWait,
   }
 
   const greeting = !canFollow
-    ? 'I’ll sit here by the pile. ask me something.'
+    ? 'I’ll sit here by your saved clubs. ask me something.'
     : waiting
       ? 'I’m over here if you need me. ask me something, or I can tag along.'
       : 'coming along. ask me something, or tell me to wait.'
