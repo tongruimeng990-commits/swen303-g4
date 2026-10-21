@@ -42,7 +42,7 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
   const shortlist = useShortlist()
   const golem = useGolem()
   const [preview, setPreview] = useState<Preview | null>(null)
-  const [filter, setFilter] = useState<ClubFilter>(EMPTY_FILTER)
+  const [filter, setFilter] = useState<ClubFilter>(() => parseQuery(new URLSearchParams(window.location.search).get('q') ?? ''))
   const listRef = useRef<HTMLOListElement | null>(null)
   const previewRef = useRef<HTMLDivElement | null>(null)
   const all = useMemo(() => clubsByWeek(), [])
@@ -144,7 +144,7 @@ export function ClubList({ filtersIncoming, filtersLanded }: ClubListProps = {})
   // The box itself follows (it docks into the filter bar), keeping its focus.
   // Day and time words in the box light the matching pills; pills you pressed
   // yourself stay pressed while you type.
-  const lastQuery = useRef('')
+  const lastQuery = useRef(new URLSearchParams(window.location.search).get('q') ?? '')
   useEffect(() => {
     const onSearch = (event: Event) => {
       const detail = (event as CustomEvent<SearchRequest>).detail

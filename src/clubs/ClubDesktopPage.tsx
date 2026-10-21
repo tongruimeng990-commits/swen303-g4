@@ -22,6 +22,7 @@ type Opened =
   | null
 
 const navigation = [
+  { label: 'find a club', href: '/clubs' },
   { label: 'what’s on', href: '#coming-up' },
   { label: 'watch', href: '#watch' },
   { label: 'first time?', href: '#first-time' },
@@ -198,6 +199,11 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
               ? `${club.name} comes up first on the clubs page now · saved in this browser only`
               : 'pinned clubs come up first on the clubs page · saved in this browser only'}
           </p>
+          <div className="desk-socials" aria-label="Club links">
+            {club.contact.facebook && <a href={club.contact.facebook} target="_blank" rel="noreferrer">Facebook</a>}
+            {club.contact.instagram && <a href={club.contact.instagram} target="_blank" rel="noreferrer">Instagram</a>}
+            {club.contact.website && <a href={club.contact.website} target="_blank" rel="noreferrer">Website</a>}
+          </div>
           {desk.moved ? (
             <button type="button" className="desk-tidy" onClick={desk.reset}>
               tidy desk
@@ -227,6 +233,8 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
           <FirstTimeNote club={club} />
         </MacWindow>
 
+        <ClubConversation club={club} />
+
         <MacWindow id="watch" title={club.watch.file} subtitle="what a session looks like" className="desk-window--videos">
           <p className="desk-lead">{club.watch.lead}</p>
           <div className="video-desk">
@@ -234,8 +242,6 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
           </div>
         </MacWindow>
 
-
-        <ClubConversation club={club} />
 
         <MacWindow
           id="say-hi"
@@ -252,13 +258,13 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
             {club.contact.mailingList ? (
               <li>
                 <span>mailing list</span>
-                <a href={club.contact.website} target="_blank" rel="noreferrer">{club.contact.mailingList}</a>
+                  <a href={club.contact.website} target="_blank" rel="noreferrer">Join the mailing list</a>
               </li>
             ) : null}
             {club.contact.facebook ? (
               <li>
                 <span>facebook</span>
-                <a href={club.contact.facebook} target="_blank" rel="noreferrer">{club.fullName}</a>
+                  <a href={club.contact.facebook} target="_blank" rel="noreferrer">Facebook</a>
               </li>
             ) : null}
             {club.contact.instagram ? (
@@ -280,7 +286,7 @@ export function ClubDesktopPage({ club }: { club: ClubDesktopContent }) {
 
       <footer className="desk-footer">
         <div className="desk-footer__row">
-          <a href="/">← back to all clubs</a>
+          <a href="/clubs">← back to all clubs</a>
           <span>photos and videos belong to {club.name} and the people credited.</span>
         </div>
         <Colophon />

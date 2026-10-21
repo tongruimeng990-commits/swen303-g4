@@ -1,0 +1,5 @@
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400 800; font-display: swap; src: url('/fonts/inter-400-800-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Krub'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/krub-400-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Krub'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/krub-500-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Krub'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/krub-600-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Krub'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/krub-700-latin.woff2') format('woff2'); }

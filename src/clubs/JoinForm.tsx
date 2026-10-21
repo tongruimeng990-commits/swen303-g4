@@ -109,11 +109,7 @@ export function JoinForm({ club, onSent }: JoinFormProps) {
   const panelId = (which: JoinTab) => `${baseId}-panel-${which}`
 
   return (
-    <div className="join" data-phase={phase}>
-      <p className="join__proto">
-        <span aria-hidden="true">◐</span> prototype: nothing reaches {club.name} from this form yet. emailing them (below) still works.
-      </p>
-
+    <div className="join join--balanced" data-phase={phase}>
       <div className="join__tabs" role="tablist" aria-label="Sign up, or ask a question first">
         {(['signup', 'ask'] as const).map((which) => (
           <button
@@ -150,23 +146,24 @@ export function JoinForm({ club, onSent }: JoinFormProps) {
           noValidate
           onSubmit={submitSignup}
         >
-          <Field label="name" error={signupErrors.name} id={`${baseId}-name`}>
-            <input id={`${baseId}-name`} name="name" autoComplete="name" value={signup.name} disabled={phase !== 'idle'} onChange={(e) => setSignup({ ...signup, name: e.target.value })} />
-          </Field>
           <div className="join__row">
-            <Field label="student ID" error={signupErrors.studentId} id={`${baseId}-sid`}>
-              <input id={`${baseId}-sid`} name="studentId" inputMode="numeric" autoComplete="off" placeholder="300123456" value={signup.studentId} disabled={phase !== 'idle'} onChange={(e) => setSignup({ ...signup, studentId: e.target.value })} />
+            <Field label="your name" error={signupErrors.name} id={`${baseId}-name`}>
+              <input id={`${baseId}-name`} name="name" autoComplete="name" placeholder="Your name" value={signup.name} disabled={phase !== 'idle'} onChange={(e) => setSignup({ ...signup, name: e.target.value })} />
             </Field>
-            <Field label="email" error={signupErrors.email} id={`${baseId}-email`}>
+            <Field label="your email" error={signupErrors.email} id={`${baseId}-email`}>
               <input id={`${baseId}-email`} name="email" type="email" autoComplete="email" placeholder="you@myvuw.ac.nz" value={signup.email} disabled={phase !== 'idle'} onChange={(e) => setSignup({ ...signup, email: e.target.value })} />
             </Field>
           </div>
-          <Field label="anything the club should know (optional)" id={`${baseId}-note`}>
-            <textarea id={`${baseId}-note`} name="note" rows={2} placeholder="e.g. total beginner, free after 6pm" value={signup.note} disabled={phase !== 'idle'} onChange={(e) => setSignup({ ...signup, note: e.target.value })} />
-          </Field>
+          <div className="join__row join__row--details">
+            <Field label="student ID" error={signupErrors.studentId} id={`${baseId}-sid`}>
+              <input id={`${baseId}-sid`} name="studentId" inputMode="numeric" autoComplete="off" placeholder="300123456" value={signup.studentId} disabled={phase !== 'idle'} onChange={(e) => setSignup({ ...signup, studentId: e.target.value })} />
+            </Field>
+            <Field label="your message (optional)" id={`${baseId}-note`}>
+              <textarea id={`${baseId}-note`} name="note" rows={1} placeholder="e.g. total beginner, free after 6pm" value={signup.note} disabled={phase !== 'idle'} onChange={(e) => setSignup({ ...signup, note: e.target.value })} />
+            </Field>
+          </div>
           <div className="join__actions">
             <StatusButton phase={phase} idle="Sign up" />
-            <span className="join__small">no payment, no commitment. the club gets your name and email.</span>
           </div>
         </form>
       ) : (
@@ -219,6 +216,10 @@ export function JoinForm({ club, onSent }: JoinFormProps) {
             send another
           </button>
         ) : null}
+      </p>
+
+      <p className="join__proto">
+        <span aria-hidden="true">◐</span> Prototype only — this form does not send to {club.name}. Use the email option below to contact them.
       </p>
 
       <details className="join__mail">

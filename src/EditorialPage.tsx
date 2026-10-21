@@ -10,6 +10,7 @@ import { Shortlist } from './shortlist/Shortlist'
 import { HeroTitle } from './HeroTitle'
 import { HeroSearch } from './home/HeroSearch'
 import { posterInteraction } from './lib/poster-interaction'
+import { CLUBS_PATH } from './lib/routes'
 
 const Golem = lazy(() => import('./golem/Golem'))
 
@@ -48,7 +49,7 @@ const golemRestingSpot = () => {
  * coming-up.ics and in my clubs' week view, and how joining works is on every
  * club's first-time.note.
  */
-const navigation = [{ label: 'find a club', href: '#clubs' }]
+const navigation = [{ label: 'find a club', href: CLUBS_PATH }]
 
 /** How far you scroll (in viewport heights) before the hero has fully retreated. */
 const REVEAL_DISTANCE = 0.8
@@ -96,7 +97,7 @@ function canSettle() {
   return true
 }
 
-export function EditorialPage() {
+export function EditorialPage({ listOnly = false }: { listOnly?: boolean }) {
   const [ghosts, setGhosts] = useState<Ghost[]>([])
   const [settled, setSettled] = useState<SettledCard | null>(null)
   const ghostSerial = useRef(0)
@@ -144,7 +145,7 @@ export function EditorialPage() {
   // The filter bar: once per session the golem throws it into place. Until
   // then it is in the DOM but unseen; several things reveal it plainly so
   // nobody is left without filters (touch, keyboard focus, no golem in time).
-  const [tools, setTools] = useState<ToolsState>(() => (shouldThrowTools() ? 'incoming' : 'placed'))
+  const [tools, setTools] = useState<ToolsState>(() => (!listOnly && shouldThrowTools() ? 'incoming' : 'placed'))
   const toolsRef = useRef(tools)
   toolsRef.current = tools
   const revealTools = useCallback((how: 'landed' | 'placed') => {
@@ -213,6 +214,7 @@ export function EditorialPage() {
         ghost.setAttribute('aria-hidden', 'true')
         ghost.inert = true
         ghost.classList.add('club-filters--ghost')
+        ghost.querySelector('.club-filters__dock')?.replaceChildren()
         Object.assign(ghost.style, {
           left: `${to.left}px`,
           top: `${to.top}px`,
@@ -241,6 +243,7 @@ export function EditorialPage() {
     const update = () => {
       const page = pageRef.current
       if (!page) return
+      if (listOnly) return
       const progress = Math.min(1, Math.max(0, window.scrollY / (window.innerHeight * REVEAL_DISTANCE)))
       page.style.setProperty('--reveal', progress.toFixed(3))
       page.toggleAttribute('data-revealed', progress > 0.6)
@@ -252,7 +255,7 @@ export function EditorialPage() {
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
     }
-  }, [])
+  }, [listOnly])
 
   useEffect(() => {
     cycleRef.current = cycle
@@ -458,8 +461,12 @@ export function EditorialPage() {
   const club = settled ? clubsByTone[settled.tone % clubsByTone.length] : null
 
   return (
-    <main className="homepage" ref={pageRef}>
-      <section
+    <main className={listOnly ? 'homepage clubs-page' : 'homepage'} ref={pageRef}>
+      {listOnly && <header className="listing-header">
+        <a className="brand" href="/" aria-label="vuw clubs home"><span>vuw</span><span>clubs.</span></a>
+        <nav aria-label="Primary navigation"><a href={CLUBS_PATH} aria-current="page">find a club</a></nav>
+      </header>}
+      {!listOnly && <section
         id="home"
         className="black-field"
         aria-labelledby="hero-title"
@@ -567,7 +574,7 @@ export function EditorialPage() {
         <HeroTitle />
         <HeroSearch />
 
-        <a className="scroll-hint" href="#clubs" aria-label="Browse all clubs">
+        <a className="scroll-hint" href={CLUBS_PATH} aria-label="Browse all clubs">
           <span aria-hidden="true">↓</span>
         </a>
 
@@ -579,7 +586,9 @@ export function EditorialPage() {
           <span className="crt__on crt__on--top" />
           <span className="crt__on crt__on--bottom" />
         </div>
-      </section>
+      </section>}
+
+      {listOnly && <HeroSearch listOnly />}
 
       <GolemProvider value={golemHandle}>
         <div className="clubs-sheet" onPointerEnter={onClubsPointerEnter}>

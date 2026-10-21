@@ -117,11 +117,11 @@ export function ClubConversation({ club }: { club: ClubDesktopContent }) {
 
   return (
     <div className="club-conversation" ref={pairRef}>
-      <MacWindow id="members" title="in-their-words.chat" subtitle="members on why they go" className="desk-window--wall">
-        <ClubChat club={club} />
-      </MacWindow>
       <MacWindow id="coming-up" title="coming-up.ics" subtitle="when they meet" className="desk-window--events">
         <ClubCalendar club={club} />
+      </MacWindow>
+      <MacWindow id="members" title="in-their-words.chat" subtitle="members on why they go" className="desk-window--wall">
+        <ClubChat club={club} />
       </MacWindow>
     </div>
   )

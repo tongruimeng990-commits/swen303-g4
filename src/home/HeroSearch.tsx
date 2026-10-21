@@ -1,6 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { requestSearch, SEARCH_DOCK_ID, SEARCH_EVENT, type SearchRequest } from '../lib/search'
+import { clubListUrl } from '../lib/routes'
 
 /** Where the pill's centre wants to be, as a share of the screen's height. */
 const CENTRE = 0.54
@@ -10,8 +11,28 @@ const LIVE_DELAY_MS = 300
 const DOCK_SLACK = 8
 /** Scrolling back up: the pill returns once the slot is this far below the fold. */
 const UNDOCK_SLACK = 40
-const FLIGHT_MS = 460
+const FLIGHT_MS = 520
 const FLIGHT_EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)'
+
+/** The parts that change look between the hero pill and the docked box, and what changes. */
+const LOOK: Record<string, string[]> = {
+  '.hero-search__field': ['height', 'borderRadius', 'backgroundColor', 'borderColor', 'color'],
+  '.hero-search__field input': ['fontSize', 'color', 'paddingLeft'],
+  '.hero-search__glass': ['left', 'width', 'height', 'color'],
+  '.hero-search__go': ['width', 'minWidth', 'height', 'paddingLeft', 'paddingRight', 'borderRadius', 'backgroundColor', 'color', 'fontSize'],
+}
+type Look = Record<string, Keyframe>
+
+function lookOf(form: HTMLElement): Look {
+  const look: Look = {}
+  for (const [selector, props] of Object.entries(LOOK)) {
+    const el = form.querySelector(selector)
+    if (!el) continue
+    const style = getComputedStyle(el)
+    look[selector] = Object.fromEntries(props.map((prop) => [prop, style[prop as keyof CSSStyleDeclaration] as string]))
+  }
+  return look
+}
 
 /**
  * The one search box on the page. On the first screen it is the centre of the
@@ -21,26 +42,34 @@ const FLIGHT_EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)'
  * rides along with it; scroll back and it returns to the middle. Typing
  * filters the list live; Enter or the arrow scrolls down to the list.
  */
-export function HeroSearch() {
+export function HeroSearch({ listOnly = false }: { listOnly?: boolean }) {
   const id = useId()
   const formRef = useRef<HTMLFormElement | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const [top, setTop] = useState<number | null>(null)
-  const [value, setValue] = useState('')
-  const [docked, setDocked] = useState(false)
-  const dockedRef = useRef(false)
+  const [top, setTop] = useState<number | null>(listOnly ? 0 : null)
+  const [value, setValue] = useState(() => listOnly ? new URLSearchParams(window.location.search).get('q') ?? '' : '')
+  const [docked, setDocked] = useState(listOnly)
+  const dockedRef = useRef(listOnly)
   dockedRef.current = docked
   const timer = useRef<number | null>(null)
   /** The form's height while it sits in the hero, so the return trip is measured right. */
   const heroHeight = useRef(0)
   /** Where the form was just before it changed homes; drives the flight. */
-  const flight = useRef<{ from: DOMRect; focused: boolean } | null>(null)
+  const flight = useRef<{ from: DOMRect; focused: boolean; look: Look } | null>(null)
+  const [dockTarget, setDockTarget] = useState<HTMLElement | null>(null)
+
+  // The separate list has no hero measurement to cause a second render.
+  // Resolve its portal after all DOM nodes (including the filter slot) exist.
+  useLayoutEffect(() => {
+    setDockTarget(docked ? document.getElementById(SEARCH_DOCK_ID) : null)
+  }, [docked])
 
   // Centre of the screen, unless the VUW mark (left of centre, above) reaches
   // down that far on a short window — then sit just under it. Layout boxes
   // (offset*, summed up to the screen), so the scroll-driven transforms on
   // the heading do not shift the measurement.
   useEffect(() => {
+    if (listOnly) return
     const heading = document.querySelector<HTMLElement>('.hero-heading')
     const anchor = heading?.querySelector<HTMLElement>('[data-search-anchor]') ?? heading
     const screen = heading?.offsetParent as HTMLElement | null
@@ -68,13 +97,13 @@ export function HeroSearch() {
       observer.disconnect()
       window.removeEventListener('resize', measure)
     }
-  }, [])
+  }, [listOnly])
 
   // Docking: the pill leaves the hero when the sheet reaches its underside, or
   // when the filter bar's slot comes into view — whichever is first. It comes
   // back when the slot has gone below the fold again.
   useEffect(() => {
-    if (top === null) return
+    if (top === null || listOnly) return
     const sheet = document.querySelector<HTMLElement>('.clubs-sheet')
     const slot = document.getElementById(SEARCH_DOCK_ID)
     if (!sheet || !slot) return
@@ -88,7 +117,7 @@ export function HeroSearch() {
         : slotTop < fold - 16 || sheetTop < heroBottom - DOCK_SLACK
       if (next === dockedRef.current) return
       const form = formRef.current
-      if (form) flight.current = { from: form.getBoundingClientRect(), focused: form.contains(document.activeElement) }
+      if (form) flight.current = { from: form.getBoundingClientRect(), focused: form.contains(document.activeElement), look: lookOf(form) }
       dockedRef.current = next
       setDocked(next)
     }
@@ -99,7 +128,7 @@ export function HeroSearch() {
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
     }
-  }, [top])
+  }, [top, listOnly])
 
   // The flight between homes: the new element starts where the old one was
   // and settles into place (FLIP). Focus carries over if it had it.
@@ -117,22 +146,35 @@ export function HeroSearch() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const to = form.getBoundingClientRect()
     if (to.width === 0 || trip.from.width === 0) return
-    // Keep whatever transform the resting style already has (in the hero the
-    // pill is centred with translateX(-50%)); the flight is applied on top of
-    // it, and the final frame returns to exactly that, so nothing jumps when
-    // the animation lets go.
+    // One box travelling and reshaping, not two boxes swapping: the form moves
+    // from where it was and resizes (no scaling, so the text never stretches),
+    // while the field, button and text tween from the old look to the new one.
+    // In the hero the form is centred with translateX(-50%) of its own width,
+    // so a changing width there needs the offset corrected.
     const base = getComputedStyle(form).transform
     const rest = base === 'none' ? '' : `${base} `
-    form.animate(
+    const centred = !docked
+    const dx = trip.from.left - to.left - (centred ? (to.width - trip.from.width) / 2 : 0)
+    const dy = trip.from.top - to.top
+    const timing = { duration: FLIGHT_MS, easing: FLIGHT_EASE }
+    // Hold the form's layout box at its final height so the bar under it does
+    // not grow and shrink while the field animates.
+    form.style.height = `${form.offsetHeight}px`
+    const move = form.animate(
       [
-        {
-          transformOrigin: 'top left',
-          transform: `${rest}translate(${trip.from.left - to.left}px, ${trip.from.top - to.top}px) scale(${trip.from.width / to.width}, ${trip.from.height / to.height})`,
-        },
-        { transformOrigin: 'top left', transform: base },
+        { transform: `${rest}translate(${dx}px, ${dy}px)`, width: `${trip.from.width}px` },
+        { transform: base, width: `${to.width}px` },
       ],
-      { duration: FLIGHT_MS, easing: FLIGHT_EASE },
+      timing,
     )
+    const settle = () => form.style.removeProperty('height')
+    move.onfinish = settle
+    move.oncancel = settle
+    const look = lookOf(form)
+    for (const [selector, before] of Object.entries(trip.look)) {
+      const el = form.querySelector(selector)
+      if (el && look[selector]) el.animate([before, look[selector]], timing)
+    }
   }, [docked])
 
   // The list cleared its filters: empty the box too.
@@ -162,6 +204,10 @@ export function HeroSearch() {
     if (timer.current !== null) {
       window.clearTimeout(timer.current)
       timer.current = null
+    }
+    if (!listOnly) {
+      window.location.assign(clubListUrl(query))
+      return
     }
     requestSearch(query, true)
   }
@@ -200,7 +246,7 @@ export function HeroSearch() {
           id={id}
           type="search"
           value={value}
-          placeholder="a club, an activity, or a day"
+          placeholder={docked ? 'Search by name, activity or day' : 'Search clubs, events, or interests…'}
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
@@ -208,7 +254,7 @@ export function HeroSearch() {
           onChange={(event) => onChange(event.target.value)}
         />
         <button type="submit" className="hero-search__go" aria-label="Search and show the list">
-          →
+          Search
         </button>
       </div>
       <p className="hero-search__hint">
@@ -220,6 +266,9 @@ export function HeroSearch() {
   )
 
   if (!docked) return form
-  const slot = document.getElementById(SEARCH_DOCK_ID)
+  // During a home-page docking flight the slot already exists: move into it
+  // in this render so the FLIP/focus layout effect sees the final DOM node.
+  // On a direct /clubs load, dockTarget supplies the post-mount retry.
+  const slot = document.getElementById(SEARCH_DOCK_ID) ?? dockTarget
   return slot ? createPortal(form, slot) : form
 }

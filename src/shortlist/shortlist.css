@@ -262,10 +262,29 @@ body:has(.shortlist-stage) .club-preview {
   box-shadow: 0 0 0 1px var(--sl-line), 0 16px 36px -28px rgba(0, 0, 0, 0.55);
 }
 
-/* Not thrown in yet: present for keyboards and screen readers, unseen. */
+/* Not thrown in yet: present for keyboards and screen readers, unseen. The
+   search box is the exception: it flies down from the hero on its own and must
+   be visible wherever it lands. */
 .club-filters[data-incoming] {
-  opacity: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   pointer-events: none;
+}
+
+.club-filters[data-incoming] > :not(.club-filters__dock),
+.club-filters[data-incoming] .club-filters__dock:not(:has(.hero-search)) {
+  opacity: 0;
+}
+
+.club-filters[data-incoming] .club-filters__dock {
+  pointer-events: auto;
+}
+
+/* The thrown copy carries the bar without the search box, which is already there. */
+.club-filters--ghost .club-filters__dock {
+  visibility: hidden;
 }
 
 .club-filters[data-landed] {
