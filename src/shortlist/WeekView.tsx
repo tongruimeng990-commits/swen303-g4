@@ -60,7 +60,7 @@ export function WeekView({ clubs, onPick }: WeekViewProps) {
   }
 
   return (
-    <div className="week" aria-label="Your clubs on a week">
+    <div className="week" aria-label="Your clubs on a calendar">
       <div className="week__status" role="status">
         {summary ? (
           <p>{summary}</p>

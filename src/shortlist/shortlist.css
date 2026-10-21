@@ -789,7 +789,7 @@ body:has(.shortlist-stage) .club-preview {
   transform: translateY(-1px);
 }
 
-.shortlist-button--primary {
+.shortlist-button.shortlist-button--primary {
   background: var(--sl-ink);
   border-color: var(--sl-ink);
   color: #fff;

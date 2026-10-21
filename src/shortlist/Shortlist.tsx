@@ -361,7 +361,7 @@ export function Shortlist({ tone }: { tone: 'dark' | 'light' }) {
               cards
             </button>
             <button type="button" aria-pressed={showWeek} onClick={() => chooseView('week')}>
-              week
+              calendar
             </button>
           </div>
           {showWeek ? (
