@@ -33,6 +33,31 @@ remain responsible for search, saving, video, forms and scroll effects.
 
 Participant consent forms and transcripts are shared with the teaching team separately, not in this repository.
 
+## References
+
+Related work
+
+- Iasondesign, "Brunel Union: making it simple for students to join societies," UX case study, Brunel University London. https://iasondesign.framer.website/Brunel-Union/
+
+Methods and design
+
+- J. Nielsen, "10 Usability Heuristics for User Interface Design," Nielsen Norman Group, 1994, updated 2020. https://www.nngroup.com/articles/ten-usability-heuristics/
+- Coolors, colour palette generator. https://coolors.co/
+- Figma, "Font pairings." https://www.figma.com/resource-library/font-pairings/
+- Inter and Krub typefaces, SIL Open Font License. https://fonts.google.com/specimen/Inter, https://fonts.google.com/specimen/Krub
+
+Club content and media
+
+Club details, photos and videos come from each club's public pages; credits are shown on each video in the site.
+
+- Victoria University of Wellington, Clubs and societies directory. https://www.wgtn.ac.nz/recreation/clubs-and-societies/directory
+- VUCC, Victoria University Canoe Club. https://vucc.nz/
+- VicFolk. https://vicfolkmusic.wordpress.com/
+- VUWTC, Victoria University of Wellington Tramping Club. https://www.vuwtc.org.nz/
+- Vic Debsoc. https://www.vicdebsoc.org.nz/
+- Mukume Taiko Drummers. https://www.wgtn.ac.nz/recreation/clubs-and-societies/directory/mukume-taiko-drummers
+- Vic Uke. https://www.wgtn.ac.nz/recreation/clubs-and-societies/directory/vic-uke
+
 ## Other commands
 
 ```sh
