@@ -42,6 +42,7 @@ Related work
 Methods and design
 
 - J. Nielsen, "10 Usability Heuristics for User Interface Design," Nielsen Norman Group, 1994, updated 2020. https://www.nngroup.com/articles/ten-usability-heuristics/
+- J. Nielsen, "Progressive Disclosure," Nielsen Norman Group, 2006. https://www.nngroup.com/articles/progressive-disclosure/
 - Coolors, colour palette generator. https://coolors.co/
 - Figma, "Font pairings." https://www.figma.com/resource-library/font-pairings/
 - Inter and Krub typefaces, SIL Open Font License. https://fonts.google.com/specimen/Inter, https://fonts.google.com/specimen/Krub
@@ -55,8 +56,9 @@ Club details, photos and videos come from each club's public pages; credits are 
 - VicFolk. https://vicfolkmusic.wordpress.com/
 - VUWTC, Victoria University of Wellington Tramping Club. https://www.vuwtc.org.nz/
 - Vic Debsoc. https://www.vicdebsoc.org.nz/
-- Mukume Taiko Drummers. https://www.wgtn.ac.nz/recreation/clubs-and-societies/directory/mukume-taiko-drummers
-- Vic Uke. https://www.wgtn.ac.nz/recreation/clubs-and-societies/directory/vic-uke
+- Mukume Taiko Drummers. https://www.wgtn.ac.nz/recreation/clubs-and-societies/directory/mukume-taiko-drummers, https://www.youtube.com/@MukumeTaiko
+- Vic Uke. https://www.wgtn.ac.nz/recreation/clubs-and-societies/directory/vic-uke, https://www.youtube.com/@vicuke2837
+- Event pages on Humanitix. https://events.humanitix.com/
 
 ## Other commands
 
