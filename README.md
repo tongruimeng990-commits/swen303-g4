@@ -11,7 +11,7 @@ npm run dev
 
 Open http://localhost:5173/
 
-- `/` — homepage (find a club, catch it into your pile, ask the stone golem)
+- `/` — homepage (find a club, save it to my clubs, ask the stone golem)
 - `/clubs` — separate club list with the existing search, filters and saved clubs
 - `/clubs?q=folk+thursday` — shareable initial search; homepage search submits here
 - `/editorial/<slug>` — a club's page, e.g. `/editorial/vicfolk`, `/editorial/vuwtc`, `/editorial/debsoc`
@@ -20,6 +20,18 @@ The reference refresh uses locally hosted Inter and Krub fonts in `public/fonts/
 Their SIL Open Font Licenses are included alongside them. Colours and layout
 overrides are in `src/reference-theme.css`; the existing interaction components
 remain responsible for search, saving, video, forms and scroll effects.
+
+## Repository layout
+
+- `src/` — the website (React, TypeScript, Vite); club content is in `src/content/`
+- `public/` — club photos, posters and fonts
+- `tests/` — unit tests (`npm test`)
+- `file/` — hand-in documents
+  - `1_Cover_and_Agreement/` — cover page with contributions, team agreement
+  - `2_Reports/` — research, Iteration 1 and Iteration 2 reports (PDF)
+  - `3_Wireframes/` — Excalidraw wireframes (Iteration 1) and Figma file (Iteration 2)
+
+Participant consent forms and transcripts are shared with the teaching team separately, not in this repository.
 
 ## Other commands
 
