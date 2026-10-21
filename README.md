@@ -31,7 +31,10 @@ remain responsible for search, saving, video, forms and scroll effects.
   - `2_Reports/` — research, Iteration 1 and Iteration 2 reports (PDF)
   - `3_Wireframes/` — Excalidraw wireframes (Iteration 1) and Figma file (Iteration 2)
 
-Participant consent forms and transcripts are shared with the teaching team separately, not in this repository.
+Participant materials are not in this repository. They are shared with the teaching team in the OneDrive zip linked on the cover page ([SWEN303_Group4_Files.zip](https://myvuwac-my.sharepoint.com/:u:/g/personal/tongruim_myvuw_ac_nz/IQCJ9EnvsrFvSIk3MMMsgVOEASpqOBBS3c-Za_R25umaFgs?e=PKi2zb), VUW sign-in required), under `file/4_Participants/<participant>/`:
+
+- `Transcripts/` — interview transcript and user test transcript
+- `Consent_Forms/` — interview consent form and user testing consent form
 
 ## References
 
